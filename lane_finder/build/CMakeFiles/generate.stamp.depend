@@ -1,0 +1,37 @@
+# CMake generation dependency list for this directory.
+C:/Users/Ale/Desktop/tfg/CV-ADAS/lane_finder/CMakeLists.txt
+C:/Users/Ale/Desktop/tfg/CV-ADAS/lane_finder/build/CMakeFiles/3.26.4/CMakeCCompiler.cmake
+C:/Users/Ale/Desktop/tfg/CV-ADAS/lane_finder/build/CMakeFiles/3.26.4/CMakeCXXCompiler.cmake
+C:/Users/Ale/Desktop/tfg/CV-ADAS/lane_finder/build/CMakeFiles/3.26.4/CMakeRCCompiler.cmake
+C:/Users/Ale/Desktop/tfg/CV-ADAS/lane_finder/build/CMakeFiles/3.26.4/CMakeSystem.cmake
+E:/Programing/Coding Proyects/video_to_ascii/opencv/build/OpenCVConfig-version.cmake
+E:/Programing/Coding Proyects/video_to_ascii/opencv/build/OpenCVConfig.cmake
+E:/Programing/Coding Proyects/video_to_ascii/opencv/build/x64/vc16/lib/OpenCVConfig.cmake
+E:/Programing/Coding Proyects/video_to_ascii/opencv/build/x64/vc16/lib/OpenCVModules-debug.cmake
+E:/Programing/Coding Proyects/video_to_ascii/opencv/build/x64/vc16/lib/OpenCVModules-release.cmake
+E:/Programing/Coding Proyects/video_to_ascii/opencv/build/x64/vc16/lib/OpenCVModules.cmake
+E:/Programing/LaTeX/Strawberry_Perl/c/share/cmake-3.26/Modules/CMakeCInformation.cmake
+E:/Programing/LaTeX/Strawberry_Perl/c/share/cmake-3.26/Modules/CMakeCXXInformation.cmake
+E:/Programing/LaTeX/Strawberry_Perl/c/share/cmake-3.26/Modules/CMakeCommonLanguageInclude.cmake
+E:/Programing/LaTeX/Strawberry_Perl/c/share/cmake-3.26/Modules/CMakeGenericSystem.cmake
+E:/Programing/LaTeX/Strawberry_Perl/c/share/cmake-3.26/Modules/CMakeInitializeConfigs.cmake
+E:/Programing/LaTeX/Strawberry_Perl/c/share/cmake-3.26/Modules/CMakeLanguageInformation.cmake
+E:/Programing/LaTeX/Strawberry_Perl/c/share/cmake-3.26/Modules/CMakeRCInformation.cmake
+E:/Programing/LaTeX/Strawberry_Perl/c/share/cmake-3.26/Modules/CMakeSystemSpecificInformation.cmake
+E:/Programing/LaTeX/Strawberry_Perl/c/share/cmake-3.26/Modules/CMakeSystemSpecificInitialize.cmake
+E:/Programing/LaTeX/Strawberry_Perl/c/share/cmake-3.26/Modules/CheckCSourceCompiles.cmake
+E:/Programing/LaTeX/Strawberry_Perl/c/share/cmake-3.26/Modules/CheckIncludeFile.cmake
+E:/Programing/LaTeX/Strawberry_Perl/c/share/cmake-3.26/Modules/CheckLibraryExists.cmake
+E:/Programing/LaTeX/Strawberry_Perl/c/share/cmake-3.26/Modules/Compiler/CMakeCommonCompilerMacros.cmake
+E:/Programing/LaTeX/Strawberry_Perl/c/share/cmake-3.26/Modules/Compiler/MSVC-C.cmake
+E:/Programing/LaTeX/Strawberry_Perl/c/share/cmake-3.26/Modules/Compiler/MSVC-CXX.cmake
+E:/Programing/LaTeX/Strawberry_Perl/c/share/cmake-3.26/Modules/Compiler/MSVC.cmake
+E:/Programing/LaTeX/Strawberry_Perl/c/share/cmake-3.26/Modules/FindPackageHandleStandardArgs.cmake
+E:/Programing/LaTeX/Strawberry_Perl/c/share/cmake-3.26/Modules/FindPackageMessage.cmake
+E:/Programing/LaTeX/Strawberry_Perl/c/share/cmake-3.26/Modules/FindThreads.cmake
+E:/Programing/LaTeX/Strawberry_Perl/c/share/cmake-3.26/Modules/Internal/CheckSourceCompiles.cmake
+E:/Programing/LaTeX/Strawberry_Perl/c/share/cmake-3.26/Modules/Platform/Windows-MSVC-C.cmake
+E:/Programing/LaTeX/Strawberry_Perl/c/share/cmake-3.26/Modules/Platform/Windows-MSVC-CXX.cmake
+E:/Programing/LaTeX/Strawberry_Perl/c/share/cmake-3.26/Modules/Platform/Windows-MSVC.cmake
+E:/Programing/LaTeX/Strawberry_Perl/c/share/cmake-3.26/Modules/Platform/Windows.cmake
+E:/Programing/LaTeX/Strawberry_Perl/c/share/cmake-3.26/Modules/Platform/WindowsPaths.cmake

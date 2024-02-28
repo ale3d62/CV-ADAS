@@ -1,0 +1,389 @@
+
+---
+events:
+  -
+    kind: "message-v1"
+    backtrace:
+      - "E:/Programing/LaTeX/Strawberry_Perl/c/share/cmake-3.26/Modules/CMakeDetermineSystem.cmake:204 (message)"
+      - "CMakeLists.txt:2 (project)"
+    message: |
+      The system is: Windows - 6.2.9200 - AMD64
+  -
+    kind: "message-v1"
+    backtrace:
+      - "E:/Programing/LaTeX/Strawberry_Perl/c/share/cmake-3.26/Modules/CMakeDetermineCompilerId.cmake:17 (message)"
+      - "E:/Programing/LaTeX/Strawberry_Perl/c/share/cmake-3.26/Modules/CMakeDetermineCompilerId.cmake:64 (__determine_compiler_id_test)"
+      - "E:/Programing/LaTeX/Strawberry_Perl/c/share/cmake-3.26/Modules/CMakeDetermineCCompiler.cmake:123 (CMAKE_DETERMINE_COMPILER_ID)"
+      - "CMakeLists.txt:2 (project)"
+    message: |
+      Compiling the C compiler identification source file "CMakeCCompilerId.c" succeeded.
+      Compiler:  
+      Build flags: 
+      Id flags:  
+      
+      The output was:
+      0
+      Versión de MSBuild 17.8.5+b5265ef37 para .NET Framework
+      Compilación iniciada a las 15/02/2024 22:18:10.
+      
+      Proyecto "C:\\Users\\Ale\\Desktop\\tfg\\CV-ADAS\\lane_finder\\build\\CMakeFiles\\3.26.4\\CompilerIdC\\CompilerIdC.vcxproj" en nodo 1 (destinos predeterminados).
+      PrepareForBuild:
+        Creando directorio "Debug\\".
+        La salida estructurada está habilitada. El formato del diagnóstico del compilador reflejará la jerarquía de errores. Consulte https://aka.ms/cpp/structured-output para obtener más detalles.
+        Creando directorio "Debug\\CompilerIdC.tlog\\".
+      InitializeBuildStatus:
+        Se creará "Debug\\CompilerIdC.tlog\\unsuccessfulbuild" porque se especificó "AlwaysCreate".
+        Aplicando tarea Touch a "Debug\\CompilerIdC.tlog\\unsuccessfulbuild".
+      ClCompile:
+        C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\HostX64\\x64\\CL.exe /c /nologo /W0 /WX- /diagnostics:column /Od /D _MBCS /Gm- /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /Fo"Debug\\\\" /Fd"Debug\\vc143.pdb" /external:W0 /Gd /TC /FC /errorReport:queue CMakeCCompilerId.c
+        CMakeCCompilerId.c
+      Link:
+        C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\HostX64\\x64\\link.exe /ERRORREPORT:QUEUE /OUT:".\\CompilerIdC.exe" /INCREMENTAL:NO /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /PDB:".\\CompilerIdC.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:".\\CompilerIdC.lib" /MACHINE:X64 Debug\\CMakeCCompilerId.obj
+        CompilerIdC.vcxproj -> C:\\Users\\Ale\\Desktop\\tfg\\CV-ADAS\\lane_finder\\build\\CMakeFiles\\3.26.4\\CompilerIdC\\CompilerIdC.exe
+      PostBuildEvent:
+        for %%i in (cl.exe) do @echo CMAKE_C_COMPILER=%%~$PATH:i
+        :VCEnd
+        CMAKE_C_COMPILER=C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe
+      FinalizeBuildStatus:
+        Se eliminará el archivo "Debug\\CompilerIdC.tlog\\unsuccessfulbuild".
+        Aplicando tarea Touch a "Debug\\CompilerIdC.tlog\\CompilerIdC.lastbuildstate".
+      Compilación del proyecto terminada "C:\\Users\\Ale\\Desktop\\tfg\\CV-ADAS\\lane_finder\\build\\CMakeFiles\\3.26.4\\CompilerIdC\\CompilerIdC.vcxproj" (destinos predeterminados).
+      
+      Compilación correcta.
+          0 Advertencia(s)
+          0 Errores
+      
+      Tiempo transcurrido 00:00:00.88
+      
+      
+      Compilation of the C compiler identification source "CMakeCCompilerId.c" produced "CompilerIdC.exe"
+      
+      Compilation of the C compiler identification source "CMakeCCompilerId.c" produced "CompilerIdC.vcxproj"
+      
+      The C compiler identification is MSVC, found in:
+        C:/Users/Ale/Desktop/tfg/CV-ADAS/lane_finder/build/CMakeFiles/3.26.4/CompilerIdC/CompilerIdC.exe
+      
+  -
+    kind: "message-v1"
+    backtrace:
+      - "E:/Programing/LaTeX/Strawberry_Perl/c/share/cmake-3.26/Modules/CMakeDetermineCompilerId.cmake:17 (message)"
+      - "E:/Programing/LaTeX/Strawberry_Perl/c/share/cmake-3.26/Modules/CMakeDetermineCompilerId.cmake:64 (__determine_compiler_id_test)"
+      - "E:/Programing/LaTeX/Strawberry_Perl/c/share/cmake-3.26/Modules/CMakeDetermineCXXCompiler.cmake:126 (CMAKE_DETERMINE_COMPILER_ID)"
+      - "CMakeLists.txt:2 (project)"
+    message: |
+      Compiling the CXX compiler identification source file "CMakeCXXCompilerId.cpp" succeeded.
+      Compiler:  
+      Build flags: 
+      Id flags:  
+      
+      The output was:
+      0
+      Versión de MSBuild 17.8.5+b5265ef37 para .NET Framework
+      Compilación iniciada a las 15/02/2024 22:18:11.
+      
+      Proyecto "C:\\Users\\Ale\\Desktop\\tfg\\CV-ADAS\\lane_finder\\build\\CMakeFiles\\3.26.4\\CompilerIdCXX\\CompilerIdCXX.vcxproj" en nodo 1 (destinos predeterminados).
+      PrepareForBuild:
+        Creando directorio "Debug\\".
+        La salida estructurada está habilitada. El formato del diagnóstico del compilador reflejará la jerarquía de errores. Consulte https://aka.ms/cpp/structured-output para obtener más detalles.
+        Creando directorio "Debug\\CompilerIdCXX.tlog\\".
+      InitializeBuildStatus:
+        Se creará "Debug\\CompilerIdCXX.tlog\\unsuccessfulbuild" porque se especificó "AlwaysCreate".
+        Aplicando tarea Touch a "Debug\\CompilerIdCXX.tlog\\unsuccessfulbuild".
+      ClCompile:
+        C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\HostX64\\x64\\CL.exe /c /nologo /W0 /WX- /diagnostics:column /Od /D _MBCS /Gm- /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /Fo"Debug\\\\" /Fd"Debug\\vc143.pdb" /external:W0 /Gd /TP /FC /errorReport:queue CMakeCXXCompilerId.cpp
+        CMakeCXXCompilerId.cpp
+      Link:
+        C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\HostX64\\x64\\link.exe /ERRORREPORT:QUEUE /OUT:".\\CompilerIdCXX.exe" /INCREMENTAL:NO /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /PDB:".\\CompilerIdCXX.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:".\\CompilerIdCXX.lib" /MACHINE:X64 Debug\\CMakeCXXCompilerId.obj
+        CompilerIdCXX.vcxproj -> C:\\Users\\Ale\\Desktop\\tfg\\CV-ADAS\\lane_finder\\build\\CMakeFiles\\3.26.4\\CompilerIdCXX\\CompilerIdCXX.exe
+      PostBuildEvent:
+        for %%i in (cl.exe) do @echo CMAKE_CXX_COMPILER=%%~$PATH:i
+        :VCEnd
+        CMAKE_CXX_COMPILER=C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\Hostx64\\x64\\cl.exe
+      FinalizeBuildStatus:
+        Se eliminará el archivo "Debug\\CompilerIdCXX.tlog\\unsuccessfulbuild".
+        Aplicando tarea Touch a "Debug\\CompilerIdCXX.tlog\\CompilerIdCXX.lastbuildstate".
+      Compilación del proyecto terminada "C:\\Users\\Ale\\Desktop\\tfg\\CV-ADAS\\lane_finder\\build\\CMakeFiles\\3.26.4\\CompilerIdCXX\\CompilerIdCXX.vcxproj" (destinos predeterminados).
+      
+      Compilación correcta.
+          0 Advertencia(s)
+          0 Errores
+      
+      Tiempo transcurrido 00:00:00.53
+      
+      
+      Compilation of the CXX compiler identification source "CMakeCXXCompilerId.cpp" produced "CompilerIdCXX.exe"
+      
+      Compilation of the CXX compiler identification source "CMakeCXXCompilerId.cpp" produced "CompilerIdCXX.vcxproj"
+      
+      The CXX compiler identification is MSVC, found in:
+        C:/Users/Ale/Desktop/tfg/CV-ADAS/lane_finder/build/CMakeFiles/3.26.4/CompilerIdCXX/CompilerIdCXX.exe
+      
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "E:/Programing/LaTeX/Strawberry_Perl/c/share/cmake-3.26/Modules/CMakeDetermineCompilerABI.cmake:57 (try_compile)"
+      - "E:/Programing/LaTeX/Strawberry_Perl/c/share/cmake-3.26/Modules/CMakeTestCCompiler.cmake:26 (CMAKE_DETERMINE_COMPILER_ABI)"
+      - "CMakeLists.txt:2 (project)"
+    checks:
+      - "Detecting C compiler ABI info"
+    directories:
+      source: "C:/Users/Ale/Desktop/tfg/CV-ADAS/lane_finder/build/CMakeFiles/CMakeScratch/TryCompile-hjyupj"
+      binary: "C:/Users/Ale/Desktop/tfg/CV-ADAS/lane_finder/build/CMakeFiles/CMakeScratch/TryCompile-hjyupj"
+    cmakeVariables:
+      CMAKE_C_FLAGS: "/DWIN32 /D_WINDOWS /W3"
+    buildResult:
+      variable: "CMAKE_C_ABI_COMPILED"
+      cached: true
+      stdout: |
+        Change Dir: C:/Users/Ale/Desktop/tfg/CV-ADAS/lane_finder/build/CMakeFiles/CMakeScratch/TryCompile-hjyupj
+        
+        Run Build Command(s):C:/Program Files/Microsoft Visual Studio/2022/Community/MSBuild/Current/Bin/amd64/MSBuild.exe cmTC_78dd8.vcxproj /p:Configuration=Debug /p:Platform=x64 /p:VisualStudioVersion=17.0 /v:n && Versión de MSBuild 17.8.5+b5265ef37 para .NET Framework
+        Compilación iniciada a las 15/02/2024 22:18:12.
+        
+        Proyecto "C:\\Users\\Ale\\Desktop\\tfg\\CV-ADAS\\lane_finder\\build\\CMakeFiles\\CMakeScratch\\TryCompile-hjyupj\\cmTC_78dd8.vcxproj" en nodo 1 (destinos predeterminados).
+        PrepareForBuild:
+          Creando directorio "cmTC_78dd8.dir\\Debug\\".
+          La salida estructurada está habilitada. El formato del diagnóstico del compilador reflejará la jerarquía de errores. Consulte https://aka.ms/cpp/structured-output para obtener más detalles.
+          Creando directorio "C:\\Users\\Ale\\Desktop\\tfg\\CV-ADAS\\lane_finder\\build\\CMakeFiles\\CMakeScratch\\TryCompile-hjyupj\\Debug\\".
+          Creando directorio "cmTC_78dd8.dir\\Debug\\cmTC_78dd8.tlog\\".
+        InitializeBuildStatus:
+          Se creará "cmTC_78dd8.dir\\Debug\\cmTC_78dd8.tlog\\unsuccessfulbuild" porque se especificó "AlwaysCreate".
+          Aplicando tarea Touch a "cmTC_78dd8.dir\\Debug\\cmTC_78dd8.tlog\\unsuccessfulbuild".
+        ClCompile:
+          C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\HostX64\\x64\\CL.exe /c /Zi /W3 /WX- /diagnostics:column /Od /Ob0 /D _MBCS /D WIN32 /D _WINDOWS /D "CMAKE_INTDIR=\\"Debug\\"" /Gm- /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /Fo"cmTC_78dd8.dir\\Debug\\\\" /Fd"cmTC_78dd8.dir\\Debug\\vc143.pdb" /external:W3 /Gd /TC /errorReport:queue "E:\\Programing\\LaTeX\\Strawberry_Perl\\c\\share\\cmake-3.26\\Modules\\CMakeCCompilerABI.c"
+          Compilador de optimización de C/C++ de Microsoft (R) versión 19.38.33134 para x64
+          (C) Microsoft Corporation. Todos los derechos reservados.
+          cl /c /Zi /W3 /WX- /diagnostics:column /Od /Ob0 /D _MBCS /D WIN32 /D _WINDOWS /D "CMAKE_INTDIR=\\"Debug\\"" /Gm- /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /Fo"cmTC_78dd8.dir\\Debug\\\\" /Fd"cmTC_78dd8.dir\\Debug\\vc143.pdb" /external:W3 /Gd /TC /errorReport:queue "E:\\Programing\\LaTeX\\Strawberry_Perl\\c\\share\\cmake-3.26\\Modules\\CMakeCCompilerABI.c"
+          CMakeCCompilerABI.c
+        Link:
+          C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\HostX64\\x64\\link.exe /ERRORREPORT:QUEUE /OUT:"C:\\Users\\Ale\\Desktop\\tfg\\CV-ADAS\\lane_finder\\build\\CMakeFiles\\CMakeScratch\\TryCompile-hjyupj\\Debug\\cmTC_78dd8.exe" /INCREMENTAL /ILK:"cmTC_78dd8.dir\\Debug\\cmTC_78dd8.ilk" /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"C:/Users/Ale/Desktop/tfg/CV-ADAS/lane_finder/build/CMakeFiles/CMakeScratch/TryCompile-hjyupj/Debug/cmTC_78dd8.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:/Users/Ale/Desktop/tfg/CV-ADAS/lane_finder/build/CMakeFiles/CMakeScratch/TryCompile-hjyupj/Debug/cmTC_78dd8.lib" /MACHINE:X64  /machine:x64 cmTC_78dd8.dir\\Debug\\CMakeCCompilerABI.obj
+          cmTC_78dd8.vcxproj -> C:\\Users\\Ale\\Desktop\\tfg\\CV-ADAS\\lane_finder\\build\\CMakeFiles\\CMakeScratch\\TryCompile-hjyupj\\Debug\\cmTC_78dd8.exe
+        FinalizeBuildStatus:
+          Se eliminará el archivo "cmTC_78dd8.dir\\Debug\\cmTC_78dd8.tlog\\unsuccessfulbuild".
+          Aplicando tarea Touch a "cmTC_78dd8.dir\\Debug\\cmTC_78dd8.tlog\\cmTC_78dd8.lastbuildstate".
+        Compilación del proyecto terminada "C:\\Users\\Ale\\Desktop\\tfg\\CV-ADAS\\lane_finder\\build\\CMakeFiles\\CMakeScratch\\TryCompile-hjyupj\\cmTC_78dd8.vcxproj" (destinos predeterminados).
+        
+        Compilación correcta.
+            0 Advertencia(s)
+            0 Errores
+        
+        Tiempo transcurrido 00:00:00.42
+        
+      exitCode: 0
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "E:/Programing/LaTeX/Strawberry_Perl/c/share/cmake-3.26/Modules/CMakeDetermineCompilerABI.cmake:57 (try_compile)"
+      - "E:/Programing/LaTeX/Strawberry_Perl/c/share/cmake-3.26/Modules/CMakeTestCXXCompiler.cmake:26 (CMAKE_DETERMINE_COMPILER_ABI)"
+      - "CMakeLists.txt:2 (project)"
+    checks:
+      - "Detecting CXX compiler ABI info"
+    directories:
+      source: "C:/Users/Ale/Desktop/tfg/CV-ADAS/lane_finder/build/CMakeFiles/CMakeScratch/TryCompile-msu9fv"
+      binary: "C:/Users/Ale/Desktop/tfg/CV-ADAS/lane_finder/build/CMakeFiles/CMakeScratch/TryCompile-msu9fv"
+    cmakeVariables:
+      CMAKE_CXX_FLAGS: "/DWIN32 /D_WINDOWS /W3 /GR /EHsc"
+    buildResult:
+      variable: "CMAKE_CXX_ABI_COMPILED"
+      cached: true
+      stdout: |
+        Change Dir: C:/Users/Ale/Desktop/tfg/CV-ADAS/lane_finder/build/CMakeFiles/CMakeScratch/TryCompile-msu9fv
+        
+        Run Build Command(s):C:/Program Files/Microsoft Visual Studio/2022/Community/MSBuild/Current/Bin/amd64/MSBuild.exe cmTC_2c58f.vcxproj /p:Configuration=Debug /p:Platform=x64 /p:VisualStudioVersion=17.0 /v:n && Versión de MSBuild 17.8.5+b5265ef37 para .NET Framework
+        Compilación iniciada a las 15/02/2024 22:18:12.
+        
+        Proyecto "C:\\Users\\Ale\\Desktop\\tfg\\CV-ADAS\\lane_finder\\build\\CMakeFiles\\CMakeScratch\\TryCompile-msu9fv\\cmTC_2c58f.vcxproj" en nodo 1 (destinos predeterminados).
+        PrepareForBuild:
+          Creando directorio "cmTC_2c58f.dir\\Debug\\".
+          La salida estructurada está habilitada. El formato del diagnóstico del compilador reflejará la jerarquía de errores. Consulte https://aka.ms/cpp/structured-output para obtener más detalles.
+          Creando directorio "C:\\Users\\Ale\\Desktop\\tfg\\CV-ADAS\\lane_finder\\build\\CMakeFiles\\CMakeScratch\\TryCompile-msu9fv\\Debug\\".
+          Creando directorio "cmTC_2c58f.dir\\Debug\\cmTC_2c58f.tlog\\".
+        InitializeBuildStatus:
+          Se creará "cmTC_2c58f.dir\\Debug\\cmTC_2c58f.tlog\\unsuccessfulbuild" porque se especificó "AlwaysCreate".
+          Aplicando tarea Touch a "cmTC_2c58f.dir\\Debug\\cmTC_2c58f.tlog\\unsuccessfulbuild".
+        ClCompile:
+          C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\HostX64\\x64\\CL.exe /c /Zi /W3 /WX- /diagnostics:column /Od /Ob0 /D _MBCS /D WIN32 /D _WINDOWS /D "CMAKE_INTDIR=\\"Debug\\"" /Gm- /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /GR /Fo"cmTC_2c58f.dir\\Debug\\\\" /Fd"cmTC_2c58f.dir\\Debug\\vc143.pdb" /external:W3 /Gd /TP /errorReport:queue "E:\\Programing\\LaTeX\\Strawberry_Perl\\c\\share\\cmake-3.26\\Modules\\CMakeCXXCompilerABI.cpp"
+          Compilador de optimización de C/C++ de Microsoft (R) versión 19.38.33134 para x64
+          (C) Microsoft Corporation. Todos los derechos reservados.
+          cl /c /Zi /W3 /WX- /diagnostics:column /Od /Ob0 /D _MBCS /D WIN32 /D _WINDOWS /D "CMAKE_INTDIR=\\"Debug\\"" /Gm- /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /GR /Fo"cmTC_2c58f.dir\\Debug\\\\" /Fd"cmTC_2c58f.dir\\Debug\\vc143.pdb" /external:W3 /Gd /TP /errorReport:queue "E:\\Programing\\LaTeX\\Strawberry_Perl\\c\\share\\cmake-3.26\\Modules\\CMakeCXXCompilerABI.cpp"
+          CMakeCXXCompilerABI.cpp
+        Link:
+          C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\HostX64\\x64\\link.exe /ERRORREPORT:QUEUE /OUT:"C:\\Users\\Ale\\Desktop\\tfg\\CV-ADAS\\lane_finder\\build\\CMakeFiles\\CMakeScratch\\TryCompile-msu9fv\\Debug\\cmTC_2c58f.exe" /INCREMENTAL /ILK:"cmTC_2c58f.dir\\Debug\\cmTC_2c58f.ilk" /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"C:/Users/Ale/Desktop/tfg/CV-ADAS/lane_finder/build/CMakeFiles/CMakeScratch/TryCompile-msu9fv/Debug/cmTC_2c58f.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:/Users/Ale/Desktop/tfg/CV-ADAS/lane_finder/build/CMakeFiles/CMakeScratch/TryCompile-msu9fv/Debug/cmTC_2c58f.lib" /MACHINE:X64  /machine:x64 cmTC_2c58f.dir\\Debug\\CMakeCXXCompilerABI.obj
+          cmTC_2c58f.vcxproj -> C:\\Users\\Ale\\Desktop\\tfg\\CV-ADAS\\lane_finder\\build\\CMakeFiles\\CMakeScratch\\TryCompile-msu9fv\\Debug\\cmTC_2c58f.exe
+        FinalizeBuildStatus:
+          Se eliminará el archivo "cmTC_2c58f.dir\\Debug\\cmTC_2c58f.tlog\\unsuccessfulbuild".
+          Aplicando tarea Touch a "cmTC_2c58f.dir\\Debug\\cmTC_2c58f.tlog\\cmTC_2c58f.lastbuildstate".
+        Compilación del proyecto terminada "C:\\Users\\Ale\\Desktop\\tfg\\CV-ADAS\\lane_finder\\build\\CMakeFiles\\CMakeScratch\\TryCompile-msu9fv\\cmTC_2c58f.vcxproj" (destinos predeterminados).
+        
+        Compilación correcta.
+            0 Advertencia(s)
+            0 Errores
+        
+        Tiempo transcurrido 00:00:00.42
+        
+      exitCode: 0
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "E:/Programing/LaTeX/Strawberry_Perl/c/share/cmake-3.26/Modules/Internal/CheckSourceCompiles.cmake:101 (try_compile)"
+      - "E:/Programing/LaTeX/Strawberry_Perl/c/share/cmake-3.26/Modules/CheckCSourceCompiles.cmake:76 (cmake_check_source_compiles)"
+      - "E:/Programing/LaTeX/Strawberry_Perl/c/share/cmake-3.26/Modules/FindThreads.cmake:97 (CHECK_C_SOURCE_COMPILES)"
+      - "E:/Programing/LaTeX/Strawberry_Perl/c/share/cmake-3.26/Modules/FindThreads.cmake:163 (_threads_check_libc)"
+      - "CMakeLists.txt:6 (find_package)"
+    checks:
+      - "Performing Test CMAKE_HAVE_LIBC_PTHREAD"
+    directories:
+      source: "C:/Users/Ale/Desktop/tfg/CV-ADAS/lane_finder/build/CMakeFiles/CMakeScratch/TryCompile-wdri3u"
+      binary: "C:/Users/Ale/Desktop/tfg/CV-ADAS/lane_finder/build/CMakeFiles/CMakeScratch/TryCompile-wdri3u"
+    cmakeVariables:
+      CMAKE_C_FLAGS: "/DWIN32 /D_WINDOWS /W3"
+    buildResult:
+      variable: "CMAKE_HAVE_LIBC_PTHREAD"
+      cached: true
+      stdout: |
+        Change Dir: C:/Users/Ale/Desktop/tfg/CV-ADAS/lane_finder/build/CMakeFiles/CMakeScratch/TryCompile-wdri3u
+        
+        Run Build Command(s):C:/Program Files/Microsoft Visual Studio/2022/Community/MSBuild/Current/Bin/amd64/MSBuild.exe cmTC_57daa.vcxproj /p:Configuration=Debug /p:Platform=x64 /p:VisualStudioVersion=17.0 /v:n && Versión de MSBuild 17.8.5+b5265ef37 para .NET Framework
+        Compilación iniciada a las 15/02/2024 22:18:13.
+        
+        Proyecto "C:\\Users\\Ale\\Desktop\\tfg\\CV-ADAS\\lane_finder\\build\\CMakeFiles\\CMakeScratch\\TryCompile-wdri3u\\cmTC_57daa.vcxproj" en nodo 1 (destinos predeterminados).
+        PrepareForBuild:
+          Creando directorio "cmTC_57daa.dir\\Debug\\".
+          La salida estructurada está habilitada. El formato del diagnóstico del compilador reflejará la jerarquía de errores. Consulte https://aka.ms/cpp/structured-output para obtener más detalles.
+          Creando directorio "C:\\Users\\Ale\\Desktop\\tfg\\CV-ADAS\\lane_finder\\build\\CMakeFiles\\CMakeScratch\\TryCompile-wdri3u\\Debug\\".
+          Creando directorio "cmTC_57daa.dir\\Debug\\cmTC_57daa.tlog\\".
+        InitializeBuildStatus:
+          Se creará "cmTC_57daa.dir\\Debug\\cmTC_57daa.tlog\\unsuccessfulbuild" porque se especificó "AlwaysCreate".
+          Aplicando tarea Touch a "cmTC_57daa.dir\\Debug\\cmTC_57daa.tlog\\unsuccessfulbuild".
+        ClCompile:
+          C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\HostX64\\x64\\CL.exe /c /Zi /W3 /WX- /diagnostics:column /Od /Ob0 /D _MBCS /D WIN32 /D _WINDOWS /D CMAKE_HAVE_LIBC_PTHREAD /D "CMAKE_INTDIR=\\"Debug\\"" /Gm- /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /Fo"cmTC_57daa.dir\\Debug\\\\" /Fd"cmTC_57daa.dir\\Debug\\vc143.pdb" /external:W3 /Gd /TC /errorReport:queue "C:\\Users\\Ale\\Desktop\\tfg\\CV-ADAS\\lane_finder\\build\\CMakeFiles\\CMakeScratch\\TryCompile-wdri3u\\src.c"
+          Compilador de optimización de C/C++ de Microsoft (R) versión 19.38.33134 para x64
+          (C) Microsoft Corporation. Todos los derechos reservados.
+          cl /c /Zi /W3 /WX- /diagnostics:column /Od /Ob0 /D _MBCS /D WIN32 /D _WINDOWS /D CMAKE_HAVE_LIBC_PTHREAD /D "CMAKE_INTDIR=\\"Debug\\"" /Gm- /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /Fo"cmTC_57daa.dir\\Debug\\\\" /Fd"cmTC_57daa.dir\\Debug\\vc143.pdb" /external:W3 /Gd /TC /errorReport:queue "C:\\Users\\Ale\\Desktop\\tfg\\CV-ADAS\\lane_finder\\build\\CMakeFiles\\CMakeScratch\\TryCompile-wdri3u\\src.c"
+          src.c
+        C:\\Users\\Ale\\Desktop\\tfg\\CV-ADAS\\lane_finder\\build\\CMakeFiles\\CMakeScratch\\TryCompile-wdri3u\\src.c(1,10): error C1083: No se puede abrir el archivo incluir: 'pthread.h': No such file or directory [C:\\Users\\Ale\\Desktop\\tfg\\CV-ADAS\\lane_finder\\build\\CMakeFiles\\CMakeScratch\\TryCompile-wdri3u\\cmTC_57daa.vcxproj]
+        Compilación del proyecto terminada "C:\\Users\\Ale\\Desktop\\tfg\\CV-ADAS\\lane_finder\\build\\CMakeFiles\\CMakeScratch\\TryCompile-wdri3u\\cmTC_57daa.vcxproj" (destinos predeterminados) -- ERROR.
+        
+        ERROR al compilar.
+        
+        "C:\\Users\\Ale\\Desktop\\tfg\\CV-ADAS\\lane_finder\\build\\CMakeFiles\\CMakeScratch\\TryCompile-wdri3u\\cmTC_57daa.vcxproj" (destino predeterminado) (1) ->
+        (ClCompile destino) -> 
+          C:\\Users\\Ale\\Desktop\\tfg\\CV-ADAS\\lane_finder\\build\\CMakeFiles\\CMakeScratch\\TryCompile-wdri3u\\src.c(1,10): error C1083: No se puede abrir el archivo incluir: 'pthread.h': No such file or directory [C:\\Users\\Ale\\Desktop\\tfg\\CV-ADAS\\lane_finder\\build\\CMakeFiles\\CMakeScratch\\TryCompile-wdri3u\\cmTC_57daa.vcxproj]
+        
+            0 Advertencia(s)
+            1 Errores
+        
+        Tiempo transcurrido 00:00:00.37
+        
+      exitCode: 1
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "E:/Programing/LaTeX/Strawberry_Perl/c/share/cmake-3.26/Modules/CheckLibraryExists.cmake:71 (try_compile)"
+      - "E:/Programing/LaTeX/Strawberry_Perl/c/share/cmake-3.26/Modules/FindThreads.cmake:112 (CHECK_LIBRARY_EXISTS)"
+      - "E:/Programing/LaTeX/Strawberry_Perl/c/share/cmake-3.26/Modules/FindThreads.cmake:175 (_threads_check_lib)"
+      - "CMakeLists.txt:6 (find_package)"
+    checks:
+      - "Looking for pthread_create in pthreads"
+    directories:
+      source: "C:/Users/Ale/Desktop/tfg/CV-ADAS/lane_finder/build/CMakeFiles/CMakeScratch/TryCompile-t3cycw"
+      binary: "C:/Users/Ale/Desktop/tfg/CV-ADAS/lane_finder/build/CMakeFiles/CMakeScratch/TryCompile-t3cycw"
+    cmakeVariables:
+      CMAKE_C_FLAGS: "/DWIN32 /D_WINDOWS /W3"
+    buildResult:
+      variable: "CMAKE_HAVE_PTHREADS_CREATE"
+      cached: true
+      stdout: |
+        Change Dir: C:/Users/Ale/Desktop/tfg/CV-ADAS/lane_finder/build/CMakeFiles/CMakeScratch/TryCompile-t3cycw
+        
+        Run Build Command(s):C:/Program Files/Microsoft Visual Studio/2022/Community/MSBuild/Current/Bin/amd64/MSBuild.exe cmTC_c4339.vcxproj /p:Configuration=Debug /p:Platform=x64 /p:VisualStudioVersion=17.0 /v:n && Versión de MSBuild 17.8.5+b5265ef37 para .NET Framework
+        Compilación iniciada a las 15/02/2024 22:18:13.
+        
+        Proyecto "C:\\Users\\Ale\\Desktop\\tfg\\CV-ADAS\\lane_finder\\build\\CMakeFiles\\CMakeScratch\\TryCompile-t3cycw\\cmTC_c4339.vcxproj" en nodo 1 (destinos predeterminados).
+        PrepareForBuild:
+          Creando directorio "cmTC_c4339.dir\\Debug\\".
+          La salida estructurada está habilitada. El formato del diagnóstico del compilador reflejará la jerarquía de errores. Consulte https://aka.ms/cpp/structured-output para obtener más detalles.
+          Creando directorio "C:\\Users\\Ale\\Desktop\\tfg\\CV-ADAS\\lane_finder\\build\\CMakeFiles\\CMakeScratch\\TryCompile-t3cycw\\Debug\\".
+          Creando directorio "cmTC_c4339.dir\\Debug\\cmTC_c4339.tlog\\".
+        InitializeBuildStatus:
+          Se creará "cmTC_c4339.dir\\Debug\\cmTC_c4339.tlog\\unsuccessfulbuild" porque se especificó "AlwaysCreate".
+          Aplicando tarea Touch a "cmTC_c4339.dir\\Debug\\cmTC_c4339.tlog\\unsuccessfulbuild".
+        ClCompile:
+          C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\HostX64\\x64\\CL.exe /c /Zi /W3 /WX- /diagnostics:column /Od /Ob0 /D _MBCS /D WIN32 /D _WINDOWS /D CHECK_FUNCTION_EXISTS=pthread_create /D "CMAKE_INTDIR=\\"Debug\\"" /Gm- /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /Fo"cmTC_c4339.dir\\Debug\\\\" /Fd"cmTC_c4339.dir\\Debug\\vc143.pdb" /external:W3 /Gd /TC /errorReport:queue "C:\\Users\\Ale\\Desktop\\tfg\\CV-ADAS\\lane_finder\\build\\CMakeFiles\\CMakeScratch\\TryCompile-t3cycw\\CheckFunctionExists.c"
+          Compilador de optimización de C/C++ de Microsoft (R) versión 19.38.33134 para x64
+          (C) Microsoft Corporation. Todos los derechos reservados.
+          cl /c /Zi /W3 /WX- /diagnostics:column /Od /Ob0 /D _MBCS /D WIN32 /D _WINDOWS /D CHECK_FUNCTION_EXISTS=pthread_create /D "CMAKE_INTDIR=\\"Debug\\"" /Gm- /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /Fo"cmTC_c4339.dir\\Debug\\\\" /Fd"cmTC_c4339.dir\\Debug\\vc143.pdb" /external:W3 /Gd /TC /errorReport:queue "C:\\Users\\Ale\\Desktop\\tfg\\CV-ADAS\\lane_finder\\build\\CMakeFiles\\CMakeScratch\\TryCompile-t3cycw\\CheckFunctionExists.c"
+          CheckFunctionExists.c
+        Link:
+          C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\HostX64\\x64\\link.exe /ERRORREPORT:QUEUE /OUT:"C:\\Users\\Ale\\Desktop\\tfg\\CV-ADAS\\lane_finder\\build\\CMakeFiles\\CMakeScratch\\TryCompile-t3cycw\\Debug\\cmTC_c4339.exe" /INCREMENTAL /ILK:"cmTC_c4339.dir\\Debug\\cmTC_c4339.ilk" /NOLOGO pthreads.lib kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"C:/Users/Ale/Desktop/tfg/CV-ADAS/lane_finder/build/CMakeFiles/CMakeScratch/TryCompile-t3cycw/Debug/cmTC_c4339.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:/Users/Ale/Desktop/tfg/CV-ADAS/lane_finder/build/CMakeFiles/CMakeScratch/TryCompile-t3cycw/Debug/cmTC_c4339.lib" /MACHINE:X64  /machine:x64 cmTC_c4339.dir\\Debug\\CheckFunctionExists.obj
+        LINK : fatal error LNK1104: no se puede abrir el archivo 'pthreads.lib' [C:\\Users\\Ale\\Desktop\\tfg\\CV-ADAS\\lane_finder\\build\\CMakeFiles\\CMakeScratch\\TryCompile-t3cycw\\cmTC_c4339.vcxproj]
+        Compilación del proyecto terminada "C:\\Users\\Ale\\Desktop\\tfg\\CV-ADAS\\lane_finder\\build\\CMakeFiles\\CMakeScratch\\TryCompile-t3cycw\\cmTC_c4339.vcxproj" (destinos predeterminados) -- ERROR.
+        
+        ERROR al compilar.
+        
+        "C:\\Users\\Ale\\Desktop\\tfg\\CV-ADAS\\lane_finder\\build\\CMakeFiles\\CMakeScratch\\TryCompile-t3cycw\\cmTC_c4339.vcxproj" (destino predeterminado) (1) ->
+        (Link destino) -> 
+          LINK : fatal error LNK1104: no se puede abrir el archivo 'pthreads.lib' [C:\\Users\\Ale\\Desktop\\tfg\\CV-ADAS\\lane_finder\\build\\CMakeFiles\\CMakeScratch\\TryCompile-t3cycw\\cmTC_c4339.vcxproj]
+        
+            0 Advertencia(s)
+            1 Errores
+        
+        Tiempo transcurrido 00:00:00.32
+        
+      exitCode: 1
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "E:/Programing/LaTeX/Strawberry_Perl/c/share/cmake-3.26/Modules/CheckLibraryExists.cmake:71 (try_compile)"
+      - "E:/Programing/LaTeX/Strawberry_Perl/c/share/cmake-3.26/Modules/FindThreads.cmake:112 (CHECK_LIBRARY_EXISTS)"
+      - "E:/Programing/LaTeX/Strawberry_Perl/c/share/cmake-3.26/Modules/FindThreads.cmake:176 (_threads_check_lib)"
+      - "CMakeLists.txt:6 (find_package)"
+    checks:
+      - "Looking for pthread_create in pthread"
+    directories:
+      source: "C:/Users/Ale/Desktop/tfg/CV-ADAS/lane_finder/build/CMakeFiles/CMakeScratch/TryCompile-tvlvtu"
+      binary: "C:/Users/Ale/Desktop/tfg/CV-ADAS/lane_finder/build/CMakeFiles/CMakeScratch/TryCompile-tvlvtu"
+    cmakeVariables:
+      CMAKE_C_FLAGS: "/DWIN32 /D_WINDOWS /W3"
+    buildResult:
+      variable: "CMAKE_HAVE_PTHREAD_CREATE"
+      cached: true
+      stdout: |
+        Change Dir: C:/Users/Ale/Desktop/tfg/CV-ADAS/lane_finder/build/CMakeFiles/CMakeScratch/TryCompile-tvlvtu
+        
+        Run Build Command(s):C:/Program Files/Microsoft Visual Studio/2022/Community/MSBuild/Current/Bin/amd64/MSBuild.exe cmTC_46c37.vcxproj /p:Configuration=Debug /p:Platform=x64 /p:VisualStudioVersion=17.0 /v:n && Versión de MSBuild 17.8.5+b5265ef37 para .NET Framework
+        Compilación iniciada a las 15/02/2024 22:18:14.
+        
+        Proyecto "C:\\Users\\Ale\\Desktop\\tfg\\CV-ADAS\\lane_finder\\build\\CMakeFiles\\CMakeScratch\\TryCompile-tvlvtu\\cmTC_46c37.vcxproj" en nodo 1 (destinos predeterminados).
+        PrepareForBuild:
+          Creando directorio "cmTC_46c37.dir\\Debug\\".
+          La salida estructurada está habilitada. El formato del diagnóstico del compilador reflejará la jerarquía de errores. Consulte https://aka.ms/cpp/structured-output para obtener más detalles.
+          Creando directorio "C:\\Users\\Ale\\Desktop\\tfg\\CV-ADAS\\lane_finder\\build\\CMakeFiles\\CMakeScratch\\TryCompile-tvlvtu\\Debug\\".
+          Creando directorio "cmTC_46c37.dir\\Debug\\cmTC_46c37.tlog\\".
+        InitializeBuildStatus:
+          Se creará "cmTC_46c37.dir\\Debug\\cmTC_46c37.tlog\\unsuccessfulbuild" porque se especificó "AlwaysCreate".
+          Aplicando tarea Touch a "cmTC_46c37.dir\\Debug\\cmTC_46c37.tlog\\unsuccessfulbuild".
+        ClCompile:
+          C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\HostX64\\x64\\CL.exe /c /Zi /W3 /WX- /diagnostics:column /Od /Ob0 /D _MBCS /D WIN32 /D _WINDOWS /D CHECK_FUNCTION_EXISTS=pthread_create /D "CMAKE_INTDIR=\\"Debug\\"" /Gm- /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /Fo"cmTC_46c37.dir\\Debug\\\\" /Fd"cmTC_46c37.dir\\Debug\\vc143.pdb" /external:W3 /Gd /TC /errorReport:queue "C:\\Users\\Ale\\Desktop\\tfg\\CV-ADAS\\lane_finder\\build\\CMakeFiles\\CMakeScratch\\TryCompile-tvlvtu\\CheckFunctionExists.c"
+          Compilador de optimización de C/C++ de Microsoft (R) versión 19.38.33134 para x64
+          (C) Microsoft Corporation. Todos los derechos reservados.
+          cl /c /Zi /W3 /WX- /diagnostics:column /Od /Ob0 /D _MBCS /D WIN32 /D _WINDOWS /D CHECK_FUNCTION_EXISTS=pthread_create /D "CMAKE_INTDIR=\\"Debug\\"" /Gm- /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /Fo"cmTC_46c37.dir\\Debug\\\\" /Fd"cmTC_46c37.dir\\Debug\\vc143.pdb" /external:W3 /Gd /TC /errorReport:queue "C:\\Users\\Ale\\Desktop\\tfg\\CV-ADAS\\lane_finder\\build\\CMakeFiles\\CMakeScratch\\TryCompile-tvlvtu\\CheckFunctionExists.c"
+          CheckFunctionExists.c
+        Link:
+          C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.38.33130\\bin\\HostX64\\x64\\link.exe /ERRORREPORT:QUEUE /OUT:"C:\\Users\\Ale\\Desktop\\tfg\\CV-ADAS\\lane_finder\\build\\CMakeFiles\\CMakeScratch\\TryCompile-tvlvtu\\Debug\\cmTC_46c37.exe" /INCREMENTAL /ILK:"cmTC_46c37.dir\\Debug\\cmTC_46c37.ilk" /NOLOGO pthread.lib kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"C:/Users/Ale/Desktop/tfg/CV-ADAS/lane_finder/build/CMakeFiles/CMakeScratch/TryCompile-tvlvtu/Debug/cmTC_46c37.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:/Users/Ale/Desktop/tfg/CV-ADAS/lane_finder/build/CMakeFiles/CMakeScratch/TryCompile-tvlvtu/Debug/cmTC_46c37.lib" /MACHINE:X64  /machine:x64 cmTC_46c37.dir\\Debug\\CheckFunctionExists.obj
+        LINK : fatal error LNK1104: no se puede abrir el archivo 'pthread.lib' [C:\\Users\\Ale\\Desktop\\tfg\\CV-ADAS\\lane_finder\\build\\CMakeFiles\\CMakeScratch\\TryCompile-tvlvtu\\cmTC_46c37.vcxproj]
+        Compilación del proyecto terminada "C:\\Users\\Ale\\Desktop\\tfg\\CV-ADAS\\lane_finder\\build\\CMakeFiles\\CMakeScratch\\TryCompile-tvlvtu\\cmTC_46c37.vcxproj" (destinos predeterminados) -- ERROR.
+        
+        ERROR al compilar.
+        
+        "C:\\Users\\Ale\\Desktop\\tfg\\CV-ADAS\\lane_finder\\build\\CMakeFiles\\CMakeScratch\\TryCompile-tvlvtu\\cmTC_46c37.vcxproj" (destino predeterminado) (1) ->
+        (Link destino) -> 
+          LINK : fatal error LNK1104: no se puede abrir el archivo 'pthread.lib' [C:\\Users\\Ale\\Desktop\\tfg\\CV-ADAS\\lane_finder\\build\\CMakeFiles\\CMakeScratch\\TryCompile-tvlvtu\\cmTC_46c37.vcxproj]
+        
+            0 Advertencia(s)
+            1 Errores
+        
+        Tiempo transcurrido 00:00:00.34
+        
+      exitCode: 1
+...
