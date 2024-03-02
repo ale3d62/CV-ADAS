@@ -8,7 +8,7 @@ def findLane(img):
 
     #CROP TO HALF THE HEIGHT
     imgHeight, imgWidth, _ = img.shape
-    newImgHeight = int(imgHeight/2)
+    newImgHeight = round(imgHeight/2)
     croppedImg = img[newImgHeight:imgHeight, 1:imgWidth]
 
     #MASk
@@ -20,30 +20,27 @@ def findLane(img):
     #LAB
     lab = cv2.cvtColor(masked_image, cv2.COLOR_BGR2LAB)
 
+    #lower_white = np.array([0,0,200])
+    #upper_white = np.array([360,50,255])
+
     #Channels: [Light, Green/Magenta, Blue/Yellow] 1-255 in all 3 channels
     #print(np.mean(lab[:,:,0]))
     lower_white = np.array([200, 1, 1])
     upper_white = np.array([255, 255, 255])
 
     mask = cv2.inRange(lab, lower_white, upper_white)
-    
     colorMask = cv2.bitwise_and(masked_image,masked_image, mask= mask)
 
-    kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3))
-    #colorMask = cv2.morphologyEx(lab[:,:,0], cv2.MORPH_TOPHAT, kernel)
-    #mask = cv2.adaptiveThreshold(colorMask, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 13, -4)
-
     #GAUSSIAN
-    blurred = cv2.GaussianBlur(src=colorMask, ksize=(3, 5), sigmaX=0.8) 
+    #blurred = cv2.GaussianBlur(src=colorMask, ksize=(3, 5), sigmaX=0.8) 
 
 
     #CANNY
     t_lower = 50
     t_upper = 300
-    colorMask = cv2.morphologyEx(colorMask, cv2.MORPH_OPEN, kernel)
-
     edges = cv2.Canny(colorMask, t_lower, t_upper, apertureSize=3, L2gradient=True)
-    
+
+
     #HOUGH
     lines = cv2.HoughLinesP(edges, 1, np.pi/180, 20, minLineLength=50, maxLineGap=30)
     rgbEdges = cv2.cvtColor(edges, cv2.COLOR_GRAY2BGR)
@@ -51,19 +48,16 @@ def findLane(img):
     linesRight = [[],[]]
 
     if(type(lines) == NoneType):
-        return (None, None)
+        return edges
 
     for line in lines:
         arr = np.array(line[0], dtype=np.float64)
         x1,y1,x2,y2 = arr
 
-        if(x2 == x1):
-            continue
-
         m = (y2-y1)/(x2-x1)
         b = y1 - m * x1
 
-    
+
         #filter lines by angle
         lineAngle = abs(np.arctan(m))
     
@@ -71,33 +65,36 @@ def findLane(img):
         if((lineAngle > 1 and lineAngle < 2.2) or lineAngle < 0.43 or lineAngle > 2.7):
             continue
 
+
         xCutBottom = int((newImgHeight-b)/m)
         xCutTop = int(-b/m)
-
-        #filter mask line
-        maskAngle = np.arcsin(newImgHeight/(np.sqrt(newImgHeight**2+(imgWidth*0.3)**2)))
-        if((xCutBottom < imgWidth*0.01 and lineAngle > maskAngle-maskAngle*0.1 and lineAngle < maskAngle+maskAngle*0.1) or
-            xCutBottom > imgWidth*0.99 and lineAngle > maskAngle-maskAngle*0.1 and lineAngle < maskAngle+maskAngle*0.1):
-            continue
-
-        #Classify
-        if(m > 0):  #rightLine
-            if(xCutBottom < imgWidth*0.65):
-                continue
+        
+        #right line
+        if(m < 0):
             linesRight[0].append(xCutBottom)
             linesRight[1].append(xCutTop)
-            #edges = drawLine2(rgbEdges, m, b)
-        else:       #left line
-            if(xCutBottom > imgWidth*0.35):
-                continue
+            edges = drawLine2(rgbEdges, m, b)
+        #left line
+        else:
             linesLeft[0].append(xCutBottom)
             linesLeft[1].append(xCutTop)
-            #edges = drawLine2(rgbEdges, m, b)
-    
-    bestLinePointsLeft = getBestLine(linesLeft, 50)
-    bestLinePointsRight = getBestLine(linesRight, 50)
+            edges = drawLine2(rgbEdges, m, b)
 
-    return (bestLinePointsLeft,bestLinePointsRight)
+
+    rightPoints = filterLinePoints(linesRight, 3)
+    leftPoints = filterLinePoints(linesLeft, 3)
+
+
+    try:
+        xCoords,yCoords = zip(*leftPoints)
+        lM,lB = np.polyfit(xCoords, yCoords, 1)
+        edges = drawLine2(rgbEdges, lM, lB)
+
+        xCoords,yCoords = zip(*rightPoints)
+        rM,rB = np.polyfit(xCoords, yCoords, 1)
+        edges = drawLine2(rgbEdges, rM, rB)
+    except:
+        return edges
     """
     #Parameters: (img, distance_resolution, angle_resolution, accumulator_threshold, )
     lines = cv2.HoughLines(edges, 1, np.pi/180, 30, min_theta=0.35, max_theta = 2.6)
