@@ -34,7 +34,7 @@ def findLane(img):
     #mask = cv2.adaptiveThreshold(colorMask, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 13, -4)
 
     #GAUSSIAN
-    blurred = cv2.GaussianBlur(src=colorMask, ksize=(3, 5), sigmaX=0.8) 
+    #blurred = cv2.GaussianBlur(src=colorMask, ksize=(3, 5), sigmaX=0.8) 
 
 
     #CANNY
@@ -47,12 +47,15 @@ def findLane(img):
     #HOUGH
     lines = cv2.HoughLinesP(edges, 1, np.pi/180, 20, minLineLength=50, maxLineGap=30)
     rgbEdges = cv2.cvtColor(edges, cv2.COLOR_GRAY2BGR)
-    linesLeft = [[],[]]
-    linesRight = [[],[]]
+
 
     if(type(lines) == NoneType):
-        return (None, None)
+        return rgbEdges#(None, None)
+    #st = time()
 
+
+    linesLeft = [[],[]]
+    linesRight = [[],[]]
     for line in lines:
         arr = np.array(line[0], dtype=np.float64)
         x1,y1,x2,y2 = arr
@@ -93,10 +96,13 @@ def findLane(img):
             linesLeft[0].append(xCutBottom)
             linesLeft[1].append(xCutTop)
             #edges = drawLine2(rgbEdges, m, b)
+    #print("time: " + str((time()-st)*1000) + "ms")
+    #bestLinePointsLeft = getBestLine_Debug(rgbEdges, linesLeft, 30, max(5, int(len(linesRight))), False)
+    #bestLinePointsRight = getBestLine_Debug(rgbEdges, linesRight, 30, max(5, int(len(linesRight))), False)
+    #return rgbEdges
+    bestLinePointsLeft = getBestLine(linesLeft, 30, max(5, int(len(linesRight))), False)
+    bestLinePointsRight = getBestLine(linesRight, 30, max(5, int(len(linesRight))), False)
     
-    bestLinePointsLeft = getBestLine(linesLeft, 50)
-    bestLinePointsRight = getBestLine(linesRight, 50)
-
     return (bestLinePointsLeft,bestLinePointsRight)
     """
     #Parameters: (img, distance_resolution, angle_resolution, accumulator_threshold, )

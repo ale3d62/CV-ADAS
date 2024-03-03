@@ -1,7 +1,8 @@
+from types import NoneType
 import cv2
 import numpy as np
 from sklearn.neighbors import NearestNeighbors
-
+import sys
 
 
 def drawLine(img, r, theta):
@@ -47,55 +48,98 @@ def filterLinePoints(linePoints, threshold):
 
 
 
-def getBestLine(linePoints, threshold):
+def knn(points, k):    
+    distances = np.abs(points[:, np.newaxis] - points)
+    distancesIndex = np.argsort(distances, axis=1)[:, 1:k+1]
+    kDistances = distances[np.arange(distancesIndex.shape[0])[:, None], distancesIndex]
+    distancesMean = np.mean(kDistances, axis=1)
+    
+    return distancesMean
 
-    minPoints = 6
+
+
+def getBestPoint_Debug(points, threshold, k):
+    neighbours = knn(points, k)
+
+    filteredPoints = points[neighbours <= threshold]
+    if(len(filteredPoints) == 0):
+        return None
+
+    return neighbours >= threshold
+
+
+
+def getBestLine_Debug(rgbEdges, linePoints, threshold, k, rec):
+
+    minPoints = k
     if(len(linePoints[0]) == 0):
-        return None
+        return rgbEdges
     elif(len(linePoints[0]) < minPoints):
-        return None
-        meanBottom = sum(linePoints[0]) / len(linePoints[0])
-        meanTop = sum(linePoints[1]) / len(linePoints[1])
-        return (int(meanBottom), int(meanTop))
+        return rgbEdges
+
+
+    linePointsBottom = np.array(linePoints[0])
+    linePointsTop = np.array(linePoints[1])
     
+    bestLinePointBottom = getBestPoint_Debug(linePointsBottom, threshold, k)
+    bestLinePointTop = getBestPoint_Debug(linePointsTop, threshold, k)
+    newLinePoints = [[],[]]
+    imgHeight, _, _ = rgbEdges.shape
+    if(type(bestLinePointBottom) != NoneType and type(bestLinePointTop) != NoneType):
+        
+        for i in range(len(bestLinePointBottom)):
+            if(bestLinePointBottom[i] or bestLinePointTop[i]):
+                #pass
+                if(rec):
+                    cv2.line(rgbEdges, (linePointsTop[i], 0), (linePointsBottom[i], imgHeight), (100, 255,100), 2)
+                else:
+                    cv2.line(rgbEdges, (linePointsTop[i], 0), (linePointsBottom[i], imgHeight), (255, 100,100), 2)
+            else:
+                if(rec):
+                    cv2.line(rgbEdges, (linePointsTop[i], 0), (linePointsBottom[i], imgHeight), (100, 100,255), 2)
+                else:
+                    newLinePoints[0].append(linePointsBottom[i])
+                    newLinePoints[1].append(linePointsTop[i])
 
-    linePointsBottom = [[x] for x in linePoints[0]]
-    linePointsTop = [[x] for x in linePoints[1]]
-
-    # Entrena el modelo de detección de anomalías
-    detector_anomalías = NearestNeighbors(n_neighbors=5) # Puedes ajustar el número de vecinos según tu necesidad
-    detector_anomalías.fit(linePointsBottom)
-    # Calcula las distancias a los k vecinos más cercanos para cada punto
-    distancias, _ = detector_anomalías.kneighbors()
-    # Calcula el promedio de las distancias a los k vecinos más cercanos
-    distancias_promedio = distancias.mean(axis=1)
-    # Encuentra los puntos que están por encima del umbral de anomalía
-    puntos_anómalos = [linePointsBottom[i][0] for i, distancia_promedio in enumerate(distancias_promedio) if distancia_promedio > threshold]
-    # Elimina los puntos anómalos de la lista de coordenadas
-    coordenadas_filtradas = [x[0] for x in linePointsBottom if x[0] not in puntos_anómalos]
-    if(len(coordenadas_filtradas) == 0):
-        return None
-    # El valor predicho será el promedio de los puntos restantes
-    valor_predichobot = sum(coordenadas_filtradas) / len(coordenadas_filtradas)
-
-    # Entrena el modelo de detección de anomalías
-    detector_anomalías = NearestNeighbors(n_neighbors=5) # Puedes ajustar el número de vecinos según tu necesidad
-    detector_anomalías.fit(linePointsTop)
-    # Calcula las distancias a los k vecinos más cercanos para cada punto
-    distancias, _ = detector_anomalías.kneighbors()
-    # Calcula el promedio de las distancias a los k vecinos más cercanos
-    distancias_promedio = distancias.mean(axis=1)
-    # Encuentra los puntos que están por encima del umbral de anomalía
-    puntos_anómalos = [linePointsTop[i][0] for i, distancia_promedio in enumerate(distancias_promedio) if distancia_promedio > threshold]
-    # Elimina los puntos anómalos de la lista de coordenadas
-    coordenadas_filtradas = [x[0] for x in linePointsTop if x[0] not in puntos_anómalos]
-    if(len(coordenadas_filtradas) == 0):
-        return None
-    # El valor predicho será el promedio de los puntos restantes
-    valor_predichotop = sum(coordenadas_filtradas) / len(coordenadas_filtradas)
-
-    return (int(valor_predichobot), int(valor_predichotop))
+    if(rec):
+        return rgbEdges
+    else:
+        return getBestLine_Debug(rgbEdges, newLinePoints, threshold, max(5, len(newLinePoints[0])), True)
 
 
 
+
+
+def getPointsMask(points, threshold, k):
+    neighbours = knn(points, k)
+
+    return neighbours <= threshold
+
+
+
+def getBestLine(linePoints, threshold, k, rec):
+
+    minPoints = k
+    if(len(linePoints[0]) == 0):
+        return (None, None)
+    elif(len(linePoints[0]) < minPoints):
+        return (None, None)
+
+
+    linePointsBottom = np.array(linePoints[0])
+    linePointsTop = np.array(linePoints[1])
     
+    filteredMaskBottom = getPointsMask(linePointsBottom, threshold, k)
+    filteredMaskTop = getPointsMask(linePointsTop, threshold, k)
+    
+    mask = np.bitwise_and(filteredMaskBottom, filteredMaskTop)
+    if(np.any(mask == True)):
+        
+        if(rec):
+            bestPointBottom = np.mean(linePointsBottom[mask])
+            bestPointTop = np.mean(linePointsTop[mask])
+            return (int(bestPointBottom), int(bestPointTop))
+        else:
+            return getBestLine([linePointsBottom[mask].tolist(), linePointsTop[mask].tolist()], threshold, max(5, len(mask)-mask.sum()), True)
+    else:
+        return (None, None)
