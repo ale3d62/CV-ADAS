@@ -6,7 +6,7 @@ from time import time
 import warnings
 warnings.filterwarnings('error')
 
-for i in [7, 10, 23]: #7 10 23
+for i in [23]: #7 10 23
   vid = cv2.VideoCapture('test_videos/test'+str(i)+'.mp4')
   totalTime = 0
   totalFrames = 0
@@ -19,8 +19,7 @@ for i in [7, 10, 23]: #7 10 23
     if ret == True:
       imgHeight, imgWidth, _ = frame.shape
       newImgHeight = int(imgHeight/2)
-  
-      # Display the resulting frame
+
       st = time()
       newBestLinePointsLeft, newBestLinePointsRight = findLane(frame)
       totalTime += (time()-st)*1000
@@ -36,6 +35,7 @@ for i in [7, 10, 23]: #7 10 23
           cv2.line(frame, (bestLinePointsLeft[1], newImgHeight), (bestLinePointsLeft[0], imgHeight), (0, 0, 255), 2)
       if(bestLinePointsRight):
           cv2.line(frame, (bestLinePointsRight[1], newImgHeight), (bestLinePointsRight[0], imgHeight), (0, 0, 255), 2)
+          
       cv2.imshow('Frame',frame)
       
   

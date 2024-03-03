@@ -121,9 +121,9 @@ def getBestLine(linePoints, threshold, k, rec):
 
     minPoints = k
     if(len(linePoints[0]) == 0):
-        return (None, None)
+        return [None, None]
     elif(len(linePoints[0]) < minPoints):
-        return (None, None)
+        return [None, None]
 
 
     linePointsBottom = np.array(linePoints[0])
@@ -138,8 +138,8 @@ def getBestLine(linePoints, threshold, k, rec):
         if(rec):
             bestPointBottom = np.mean(linePointsBottom[mask])
             bestPointTop = np.mean(linePointsTop[mask])
-            return (int(bestPointBottom), int(bestPointTop))
+            return [int(bestPointBottom), int(bestPointTop)]
         else:
             return getBestLine([linePointsBottom[mask].tolist(), linePointsTop[mask].tolist()], threshold, max(5, len(mask)-mask.sum()), True)
     else:
-        return (None, None)
+        return [None, None]
