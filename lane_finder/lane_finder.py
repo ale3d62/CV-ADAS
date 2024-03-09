@@ -1,33 +1,36 @@
+from os import rmdir
 from types import NoneType
 import cv2
 import numpy as np
 from time import time
 from auxFunctions import *
 
+
 def findLane(img):
-    
+
+    #LOWER RESOLUTION
+    resScaling = 1
+    img = cv2.resize(img, (0,0), fx = resScaling, fy = resScaling)
+
+
     #CROP TO HALF THE HEIGHT
-    #st = time()
+    #st = time() 135 480
     imgHeight, imgWidth, _ = img.shape
     newImgHeight = int(imgHeight/2)
     croppedImg = img[newImgHeight:imgHeight, 1:imgWidth]
     #print("Cropping time: " + str((time()-st)*1000) + "ms")
 
-    #LOWER RESOLUTION
-    resScaling = 0.25
-    croppedImg = cv2.resize(croppedImg, (0,0), fx = resScaling, fy = resScaling)
-    newImgHeight, imgWidth, _ = croppedImg.shape
 
     #MASk
-    #st = time()
+    #st = time()x1,y1,x2,y2
     vertices = np.array([[0, newImgHeight], [round(imgWidth*0.3), 0], [round(imgWidth*0.7), 0], [imgWidth, newImgHeight]], dtype=np.int32)
     mask = np.zeros_like(croppedImg)
     cv2.fillPoly(mask, [vertices], (255, 255, 255))
     masked_image = cv2.bitwise_and(croppedImg, mask)
     #print("Mask time: " + str((time()-st)*1000) + "ms")
 
-    #st = time()
     #LAB
+    #st = time()
     lab = cv2.cvtColor(masked_image, cv2.COLOR_BGR2LAB)
 
     #Channels: [Light, Green/Magenta, Blue/Yellow] 1-255 in all 3 channels
@@ -46,9 +49,9 @@ def findLane(img):
     #GAUSSIAN
     #blurred = cv2.GaussianBlur(src=colorMask, ksize=(3, 5), sigmaX=0.8) 
 
-    #st = time()
     #OPEN
-    kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3))
+    #st = time()
+    kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (int(np.ceil(3*resScaling)), int(np.ceil(3*resScaling))))
     colorMask = cv2.morphologyEx(colorMask, cv2.MORPH_OPEN, kernel)
     #print("OPEN time: " + str((time()-st)*1000) + "ms")
 
@@ -56,27 +59,25 @@ def findLane(img):
     #st = time()
     t_lower = 50
     t_upper = 300
-    
 
     edges = cv2.Canny(colorMask, t_lower, t_upper, apertureSize=3, L2gradient=True)
     #print("CANNY time: " + str((time()-st)*1000) + "ms")
-    
+
     #HOUGH
     #st = time()
-    lines = cv2.HoughLinesP(edges, 1, np.pi/180, 20, minLineLength=50, maxLineGap=30)
+    lines = cv2.HoughLinesP(edges, 1, np.pi/180, int(20*resScaling), minLineLength=int(50*resScaling), maxLineGap=int(30*resScaling))
     #rgbEdges = cv2.cvtColor(edges, cv2.COLOR_GRAY2BGR)
     #print("HOUGH time: " + str((time()-st)*1000) + "ms")
 
     #st = time()
     if(type(lines) == NoneType):
-        return (None, None)
-    #st = time()
+        return ((None, None), (None,None))
 
 
     linesLeft = [[],[]]
     linesRight = [[],[]]
     for line in lines:
-        arr = np.array(line[0], dtype=np.float64)
+        arr = np.array(line[0], dtype=np.int32)
         x1,y1,x2,y2 = arr
 
         if(x2 == x1):
@@ -121,8 +122,8 @@ def findLane(img):
     #bestLinePointsRight = getBestLine_Debug(rgbEdges, linesRight, 30, max(5, int(len(linesRight))), False)
     #return rgbEdges
     #st = time()
-    bestLinePointsLeft = getBestLine(linesLeft, 30, max(5, int(len(linesRight))), False)
-    bestLinePointsRight = getBestLine(linesRight, 30, max(5, int(len(linesRight))), False)
+    bestLinePointsLeft = getBestLine(linesLeft, int(30*resScaling), max(5, int(len(linesRight))), False)
+    bestLinePointsRight = getBestLine(linesRight, int(30*resScaling), max(5, int(len(linesRight))), False)
     #print("BEST LINE time: " + str((time()-st)*1000) + "ms")
     if(type(bestLinePointsLeft[0]) != NoneType):
         bestLinePointsLeft[0] *= int(1/resScaling)
@@ -130,7 +131,34 @@ def findLane(img):
     if(type(bestLinePointsRight[0]) != NoneType):
         bestLinePointsRight[0] *= int(1/resScaling)
         bestLinePointsRight[1] *= int(1/resScaling)
+
     return (bestLinePointsLeft,bestLinePointsRight)
+
+
+
+    """
+    roiXl = 863#575
+    roiXr = 1050#700
+    #575 415
+    #700 415 
+    #0 heigh
+    #width height
+    #WARP
+    inputPts = np.float32([[roiXl, 83], [roiXr, 83], [0, newImgHeight], [imgWidth, newImgHeight]])
+
+    warpedWidth = imgWidth
+    warpedHeight = round(np.sqrt(pow(roiXl, 2) + pow(newImgHeight, 2)))
+    #print(warpedWidth)
+    #print(warpedHeight)
+
+    outputPts = np.float32([[0, 0], [warpedWidth, 0], [0, warpedHeight], [warpedWidth, warpedHeight]])
+
+    M = cv2.getPerspectiveTransform(inputPts,outputPts)
+
+    warpedImg = cv2.warpPerspective(edges, M, (warpedWidth, warpedHeight))
+
+    return warpedImg
+    """
     """
     #Parameters: (img, distance_resolution, angle_resolution, accumulator_threshold, )
     lines = cv2.HoughLines(edges, 1, np.pi/180, 30, min_theta=0.35, max_theta = 2.6)

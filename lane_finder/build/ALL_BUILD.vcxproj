@@ -173,9 +173,9 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </ProjectReference>
-    <ProjectReference Include="C:\Users\Ale\Desktop\tfg\CV-ADAS\lane_finder\build\video_to_ascii.vcxproj">
-      <Project>{04E19CC1-CBE2-345A-832E-165632B8B0B8}</Project>
-      <Name>video_to_ascii</Name>
+    <ProjectReference Include="C:\Users\Ale\Desktop\tfg\CV-ADAS\lane_finder\build\lane_finder.vcxproj">
+      <Project>{290DA98D-9A2C-364C-8554-AF1F19546265}</Project>
+      <Name>lane_finder</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
