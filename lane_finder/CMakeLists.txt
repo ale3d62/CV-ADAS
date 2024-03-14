@@ -1,11 +1,11 @@
 cmake_minimum_required(VERSION 3.0.0)
-project(video_to_ascii)
+project(lane_finder)
 
 
 find_package(OpenCV REQUIRED)
 find_package(Threads REQUIRED)
 
-add_executable(${PROJECT_NAME} lane_finder.cpp)
+add_executable(${PROJECT_NAME} video_test.cpp)
 
 
 set(CMAKE_CXX_STANDARD 11)

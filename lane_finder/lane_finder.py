@@ -4,31 +4,30 @@ import numpy as np
 from time import time
 from auxFunctions import *
 
+
 def findLane(img):
-    
+
     #CROP TO HALF THE HEIGHT
-    #st = time()
+    #st = time() 135 480
     imgHeight, imgWidth, _ = img.shape
-    newImgHeight = int(imgHeight/2)
-    croppedImg = img[newImgHeight:imgHeight, 1:imgWidth]
+    halfImgHeight = int(imgHeight/2)
+    img = img[halfImgHeight:imgHeight, 1:imgWidth]
     #print("Cropping time: " + str((time()-st)*1000) + "ms")
 
-    #LOWER RESOLUTION
-    resScaling = 0.25
-    croppedImg = cv2.resize(croppedImg, (0,0), fx = resScaling, fy = resScaling)
-    newImgHeight, imgWidth, _ = croppedImg.shape
 
     #MASk
-    #st = time()
-    vertices = np.array([[0, newImgHeight], [round(imgWidth*0.3), 0], [round(imgWidth*0.7), 0], [imgWidth, newImgHeight]], dtype=np.int32)
-    mask = np.zeros_like(croppedImg)
+    #st = time()x1,y1,x2,y2
+    vertices = np.array([[0, halfImgHeight], [round(imgWidth*0.3), 0], [round(imgWidth*0.7), 0], [imgWidth, halfImgHeight]], dtype=np.int32)
+    mask = np.zeros_like(img)
     cv2.fillPoly(mask, [vertices], (255, 255, 255))
-    masked_image = cv2.bitwise_and(croppedImg, mask)
+    img = cv2.bitwise_and(img, mask)
     #print("Mask time: " + str((time()-st)*1000) + "ms")
 
-    #st = time()
+
     #LAB
-    lab = cv2.cvtColor(masked_image, cv2.COLOR_BGR2LAB)
+    #st = time()
+    lab = np.zeros_like(img)
+    cv2.cvtColor(img, cv2.COLOR_BGR2LAB, lab)
 
     #Channels: [Light, Green/Magenta, Blue/Yellow] 1-255 in all 3 channels
     #print(np.mean(lab[:,:,0]))
@@ -37,30 +36,35 @@ def findLane(img):
 
     mask = cv2.inRange(lab, lower_white, upper_white)
     
-    colorMask = cv2.bitwise_and(masked_image,masked_image, mask= mask)
+    colorMask = cv2.bitwise_and(img,img, mask= mask)
     #print("LAB time: " + str((time()-st)*1000) + "ms")
 
     #colorMask = cv2.morphologyEx(lab[:,:,0], cv2.MORPH_TOPHAT, kernel)
     #mask = cv2.adaptiveThreshold(colorMask, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 13, -4)
 
+
     #GAUSSIAN
     #blurred = cv2.GaussianBlur(src=colorMask, ksize=(3, 5), sigmaX=0.8) 
 
-    #st = time()
+
     #OPEN
+    #st = time()
     kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3))
     colorMask = cv2.morphologyEx(colorMask, cv2.MORPH_OPEN, kernel)
     #print("OPEN time: " + str((time()-st)*1000) + "ms")
+
 
     #CANNY
     #st = time()
     t_lower = 50
     t_upper = 300
-    
 
+    #edges = np.zeros((halfImgHeight, imgWidth), dtype=np.uint8)
+    #cv2.Canny(colorMask, t_lower, t_upper, edges, apertureSize=3, L2gradient=True)
     edges = cv2.Canny(colorMask, t_lower, t_upper, apertureSize=3, L2gradient=True)
     #print("CANNY time: " + str((time()-st)*1000) + "ms")
-    
+
+
     #HOUGH
     #st = time()
     lines = cv2.HoughLinesP(edges, 1, np.pi/180, 20, minLineLength=50, maxLineGap=30)
@@ -69,14 +73,13 @@ def findLane(img):
 
     #st = time()
     if(type(lines) == NoneType):
-        return (None, None)
-    #st = time()
+        return ((None, None), (None,None))
 
-
+    #Lines processing
     linesLeft = [[],[]]
     linesRight = [[],[]]
     for line in lines:
-        arr = np.array(line[0], dtype=np.float64)
+        arr = np.array(line[0], dtype=np.int32)
         x1,y1,x2,y2 = arr
 
         if(x2 == x1):
@@ -93,16 +96,16 @@ def findLane(img):
         if((lineAngle > 1 and lineAngle < 2.2) or lineAngle < 0.43 or lineAngle > 2.7):
             continue
 
-        xCutBottom = int((newImgHeight-b)/m)
+        xCutBottom = int((halfImgHeight-b)/m)
         xCutTop = int(-b/m)
 
         #filter mask line
-        maskAngle = np.arcsin(newImgHeight/(np.sqrt(newImgHeight**2+(imgWidth*0.3)**2)))
+        maskAngle = np.arcsin(halfImgHeight/(np.sqrt(halfImgHeight**2+(imgWidth*0.3)**2)))
         if((xCutBottom < imgWidth*0.01 and lineAngle > maskAngle-maskAngle*0.1 and lineAngle < maskAngle+maskAngle*0.1) or
             xCutBottom > imgWidth*0.99 and lineAngle > maskAngle-maskAngle*0.1 and lineAngle < maskAngle+maskAngle*0.1):
             continue
 
-        #Classify
+        #Classify left and right
         if(m > 0):  #rightLine
             if(xCutBottom < imgWidth*0.65):
                 continue
@@ -124,13 +127,34 @@ def findLane(img):
     bestLinePointsLeft = getBestLine(linesLeft, 30, max(5, int(len(linesRight))), False)
     bestLinePointsRight = getBestLine(linesRight, 30, max(5, int(len(linesRight))), False)
     #print("BEST LINE time: " + str((time()-st)*1000) + "ms")
-    if(type(bestLinePointsLeft[0]) != NoneType):
-        bestLinePointsLeft[0] *= int(1/resScaling)
-        bestLinePointsLeft[1] *= int(1/resScaling)
-    if(type(bestLinePointsRight[0]) != NoneType):
-        bestLinePointsRight[0] *= int(1/resScaling)
-        bestLinePointsRight[1] *= int(1/resScaling)
+
     return (bestLinePointsLeft,bestLinePointsRight)
+
+
+
+    """
+    roiXl = 863#575
+    roiXr = 1050#700
+    #575 415
+    #700 415 
+    #0 heigh
+    #width height
+    #WARP
+    inputPts = np.float32([[roiXl, 83], [roiXr, 83], [0, halfImgHeight], [imgWidth, halfImgHeight]])
+
+    warpedWidth = imgWidth
+    warpedHeight = round(np.sqrt(pow(roiXl, 2) + pow(halfImgHeight, 2)))
+    #print(warpedWidth)
+    #print(warpedHeight)
+
+    outputPts = np.float32([[0, 0], [warpedWidth, 0], [0, warpedHeight], [warpedWidth, warpedHeight]])
+
+    M = cv2.getPerspectiveTransform(inputPts,outputPts)
+
+    warpedImg = cv2.warpPerspective(edges, M, (warpedWidth, warpedHeight))
+
+    return warpedImg
+    """
     """
     #Parameters: (img, distance_resolution, angle_resolution, accumulator_threshold, )
     lines = cv2.HoughLines(edges, 1, np.pi/180, 30, min_theta=0.35, max_theta = 2.6)
@@ -177,8 +201,8 @@ def findLane(img):
     return edges
     """
     #CROP BASED ON LINES
-    xCutLeft = round((lR-newImgHeight*np.sin(lTheta))/np.cos(lTheta))
-    xCutRight = round((rR-newImgHeight*np.sin(rTheta))/np.cos(rTheta))
+    xCutLeft = round((lR-halfImgHeight*np.sin(lTheta))/np.cos(lTheta))
+    xCutRight = round((rR-halfImgHeight*np.sin(rTheta))/np.cos(rTheta))
     newWidth = xCutRight-xCutLeft
 
 
@@ -186,9 +210,9 @@ def findLane(img):
     y = -(((round(newWidth/5))-(rR/np.cos(rTheta))+(lR/np.cos(lTheta)))/(np.tan(rTheta)-np.tan(lTheta)))
     y = round(y)
 
-    croppedImg2 = croppedImg[y:newImgHeight, xCutLeft:xCutRight]
+    croppedImg2 = croppedImg[y:halfImgHeight, xCutLeft:xCutRight]
     croppedImg2Width = newWidth
-    croppedImg2Height = newImgHeight-y
+    croppedImg2Height = halfImgHeight-y
 
     roiXl = round((lR - y*np.sin(lTheta))/np.cos(lTheta))-xCutLeft
     roiXr = round((rR - y*np.sin(rTheta))/np.cos(rTheta))-xCutLeft

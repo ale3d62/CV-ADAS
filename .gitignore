@@ -1,0 +1,5 @@
+test_videos/
+__pycache__/
+.vscode/
+*.pt
+*.onnx
