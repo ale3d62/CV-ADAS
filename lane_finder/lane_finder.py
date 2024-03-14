@@ -1,3 +1,4 @@
+from os import rmdir
 from types import NoneType
 import cv2
 import numpy as np
@@ -17,8 +18,10 @@ def findLane(img):
 
     #MASk
     #st = time()x1,y1,x2,y2
+
     vertices = np.array([[0, halfImgHeight], [round(imgWidth*0.3), 0], [round(imgWidth*0.7), 0], [imgWidth, halfImgHeight]], dtype=np.int32)
     mask = np.zeros_like(img)
+
     cv2.fillPoly(mask, [vertices], (255, 255, 255))
     img = cv2.bitwise_and(img, mask)
     #print("Mask time: " + str((time()-st)*1000) + "ms")
@@ -28,6 +31,7 @@ def findLane(img):
     #st = time()
     lab = np.zeros_like(img)
     cv2.cvtColor(img, cv2.COLOR_BGR2LAB, lab)
+
 
     #Channels: [Light, Green/Magenta, Blue/Yellow] 1-255 in all 3 channels
     #print(np.mean(lab[:,:,0]))
@@ -47,9 +51,11 @@ def findLane(img):
     #blurred = cv2.GaussianBlur(src=colorMask, ksize=(3, 5), sigmaX=0.8) 
 
 
+
     #OPEN
     #st = time()
     kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3))
+
     colorMask = cv2.morphologyEx(colorMask, cv2.MORPH_OPEN, kernel)
     #print("OPEN time: " + str((time()-st)*1000) + "ms")
 
@@ -67,13 +73,14 @@ def findLane(img):
 
     #HOUGH
     #st = time()
-    lines = cv2.HoughLinesP(edges, 1, np.pi/180, 20, minLineLength=50, maxLineGap=30)
+    lines = cv2.HoughLinesP(edges, 1, np.pi/180, int(20*resScaling), minLineLength=int(50*resScaling), maxLineGap=int(30*resScaling))
     #rgbEdges = cv2.cvtColor(edges, cv2.COLOR_GRAY2BGR)
     #print("HOUGH time: " + str((time()-st)*1000) + "ms")
 
     #st = time()
     if(type(lines) == NoneType):
         return ((None, None), (None,None))
+
 
     #Lines processing
     linesLeft = [[],[]]
@@ -124,9 +131,10 @@ def findLane(img):
     #bestLinePointsRight = getBestLine_Debug(rgbEdges, linesRight, 30, max(5, int(len(linesRight))), False)
     #return rgbEdges
     #st = time()
-    bestLinePointsLeft = getBestLine(linesLeft, 30, max(5, int(len(linesRight))), False)
-    bestLinePointsRight = getBestLine(linesRight, 30, max(5, int(len(linesRight))), False)
+    bestLinePointsLeft = getBestLine(linesLeft, int(30*resScaling), max(5, int(len(linesRight))), False)
+    bestLinePointsRight = getBestLine(linesRight, int(30*resScaling), max(5, int(len(linesRight))), False)
     #print("BEST LINE time: " + str((time()-st)*1000) + "ms")
+
 
     return (bestLinePointsLeft,bestLinePointsRight)
 
@@ -140,6 +148,7 @@ def findLane(img):
     #0 heigh
     #width height
     #WARP
+
     inputPts = np.float32([[roiXl, 83], [roiXr, 83], [0, halfImgHeight], [imgWidth, halfImgHeight]])
 
     warpedWidth = imgWidth

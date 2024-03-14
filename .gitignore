@@ -1,5 +1,8 @@
 test_videos/
 __pycache__/
+build/
+test_images/
 .vscode/
 *.pt
 *.onnx
+
