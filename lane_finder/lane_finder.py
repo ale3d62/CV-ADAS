@@ -73,7 +73,7 @@ def findLane(img):
 
     #HOUGH
     #st = time()
-    lines = cv2.HoughLinesP(edges, 1, np.pi/180, int(20*resScaling), minLineLength=int(50*resScaling), maxLineGap=int(30*resScaling))
+    lines = cv2.HoughLinesP(edges, 1, np.pi/180, 20, minLineLength=50, maxLineGap=30)
     #rgbEdges = cv2.cvtColor(edges, cv2.COLOR_GRAY2BGR)
     #print("HOUGH time: " + str((time()-st)*1000) + "ms")
 
@@ -131,8 +131,8 @@ def findLane(img):
     #bestLinePointsRight = getBestLine_Debug(rgbEdges, linesRight, 30, max(5, int(len(linesRight))), False)
     #return rgbEdges
     #st = time()
-    bestLinePointsLeft = getBestLine(linesLeft, int(30*resScaling), max(5, int(len(linesRight))), False)
-    bestLinePointsRight = getBestLine(linesRight, int(30*resScaling), max(5, int(len(linesRight))), False)
+    bestLinePointsLeft = getBestLine(linesLeft, 30, max(5, int(len(linesRight))), False)
+    bestLinePointsRight = getBestLine(linesRight, 30, max(5, int(len(linesRight))), False)
     #print("BEST LINE time: " + str((time()-st)*1000) + "ms")
 
 

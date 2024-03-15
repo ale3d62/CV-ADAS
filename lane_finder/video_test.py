@@ -5,7 +5,18 @@ from time import time
 
 
 from ultralytics import YOLO
+#from deepsparse import Pipeline
 
+"""
+# Specify the path to your YOLOv8 ONNX model
+model_path = "yolov8n.onnx"
+
+# Set up the DeepSparse Pipeline
+yolo_pipeline = Pipeline.create(
+    task="yolov8",
+    model_path=model_path
+)
+"""
 
 
 #----------PARAMETERS----------------
@@ -20,8 +31,7 @@ roadWidth = 3600
 #Load yolo model
 model = YOLO(modelName)
 
-
-for i in range(8,23):
+for i in [23]:
     vid = cv2.VideoCapture('test_videos/test'+str(i)+'.mp4')
     totalTime = 0
     totalFrames = 0
@@ -40,11 +50,17 @@ for i in range(8,23):
             totalFrames += 1
 
             #SCAN FOR CARS
-            """
+            # Run the model on your images
+            #results = yolo_pipeline(images=frame)
+            
             results = model(frame, verbose=False)[0]
             bBoxes = [] 
             for result in results.boxes.data.tolist():
                 x1, y1, x2, y2, score, _ = result
+
+            #for box in results.boxes[0]:
+                #x1, y1, x2, y2  = box
+                #score = result.scores
 
                 if score > 0.2:
                     bBoxes.append((x1,y2,x2,y2))
@@ -55,7 +71,7 @@ for i in range(8,23):
                 cv2.imshow('Frame',frame)
                 cv2.waitKey(1)
                 continue
-            """
+            
 
             #SCAN FOR LINES
             imgHeight, imgWidth, _ = frame.shape
