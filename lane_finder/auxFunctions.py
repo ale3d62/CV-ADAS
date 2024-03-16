@@ -1,7 +1,7 @@
 from types import NoneType
 import cv2
 import numpy as np
-from sklearn.neighbors import NearestNeighbors
+#from sklearn.neighbors import NearestNeighbors
 import sys
 
 
