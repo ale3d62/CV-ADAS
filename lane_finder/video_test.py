@@ -31,7 +31,7 @@ roadWidth = 3600
 #Load yolo model
 model = YOLO(modelName)
 
-for i in [23]:
+for i in range(7,23):
     vid = cv2.VideoCapture('test_videos/test'+str(i)+'.mp4')
     totalTime = 0
     totalFrames = 0
@@ -108,22 +108,35 @@ for i in [23]:
             lb = -lm * lx1
             rm = halfImgHeight/(rx2-rx1)
             rb = -rm * rx1
-            """
+
+            #flip lines equations (as increasing means going down in the image)
+            lm = -lm
+            lb = -lb + imgHeight
+            rm = -rm
+            rb = -rb + imgHeight
+
+            #get vanishing point coordinates
+            vpx = (rb-lb) / (lm-rm)
+            vpy = lm*vpx + lb
+
+            #process boxes for distances
             for bBox in bBoxes:
                 x1, y1, x2, y2 = bBox
                 
-                lx3 = ((imgHeight-y2)-lb)/lm
-                rx3 = ((imgHeight-y2)-rb)/rm
+                lx3 = (y2-lb)/lm
+                rx3 = (y2-rb)/rm
 
                 #if car is in lane
-                if(y2 < imgHeight and y2 > halfImgHeight and ((lx3 < x1 and rx3 > x1) or (lx3 < x2 and rx3 > x2))):
+                if(carInlane(x1,x2,y2, lx3, rx3, vpy, vpx, imgHeight)):
+
+                #if(y2 < imgHeight and y2 > halfImgHeight and ((lx3 < x1 and rx3 > x1) or (lx3 < x2 and rx3 > x2))):
                     d = (f*roadWidth*imgWidth)/((rx3-lx3)*(sensorPixelW*imgWidth))
                     d = d/1000
                     #cv2.line(frame, (int(lx3), int(y2)), (int(rx3), int(y2)), (255, 50, 50), 2)
                     #print((rx3-lx3))
                     cv2.putText(frame, "Distance: {:6.2f}m".format(d), (int(x1), int(y1)), cv2.FONT_HERSHEY_PLAIN, fontScale=1, thickness=1, color=(100, 100, 255))
                     #print("distance: "+str(d))
-            """
+            
 
             cv2.imshow('Frame',frame)
             # Press Q on keyboard to  exit

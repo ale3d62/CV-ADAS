@@ -143,3 +143,35 @@ def getBestLine(linePoints, threshold, k, rec):
             return getBestLine([linePointsBottom[mask].tolist(), linePointsTop[mask].tolist()], threshold, max(5, len(mask)-mask.sum()), True)
     else:
         return [None, None]
+
+
+
+
+def carInlane(x1,x2,y2, lx3, rx3, vpy, vpx, imgHeight):
+    
+    #if y2 is at the wrong height
+    if(y2 > imgHeight or y2 < vpy):
+        return False 
+    
+
+    #Detect if car is to the left, center, or right
+    #center
+    if(x1 < vpx and x2 > vpx):
+        return True
+    
+    upPercent = (imgHeight-y2) / (imgHeight-vpy)
+    if(upPercent < 0.42):
+        return False
+
+    boxWidth = x2-x1
+
+    #left
+    if(rx3 < vpx):
+        return (x1 + boxWidth*upPercent > lx3)
+
+    #right
+    if(lx3 > vpx):
+        return (x1 - boxWidth*upPercent < rx3)
+
+    return False
+    
