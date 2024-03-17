@@ -31,7 +31,7 @@ roadWidth = 3600
 #Load yolo model
 model = YOLO(modelName)
 
-for i in range(7,23):
+for i in range(7,27):
     vid = cv2.VideoCapture('test_videos/test'+str(i)+'.mp4')
     totalTime = 0
     totalFrames = 0

@@ -166,12 +166,12 @@ def carInlane(x1,x2,y2, lx3, rx3, vpy, vpx, imgHeight):
     boxWidth = x2-x1
 
     #left
-    if(rx3 < vpx):
-        return (x1 + boxWidth*upPercent > lx3)
+    if(x2 < vpx):
+        return (x1 + boxWidth*upPercent*0.9 > lx3)
 
     #right
-    if(lx3 > vpx):
-        return (x1 - boxWidth*upPercent < rx3)
+    if(x1 > vpx):
+        return (x2 - boxWidth*upPercent*0.9 < rx3)
 
     return False
     
