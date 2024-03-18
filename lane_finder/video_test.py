@@ -21,6 +21,7 @@ yolo_pipeline = Pipeline.create(
 
 #----------PARAMETERS----------------
 modelName = "yolov8x.pt"
+acceptedClasses = set([2, 3, 4, 6, 7])
 showLines = True
 #CAMERA PARAMETERS
 f = 2.5
@@ -56,17 +57,18 @@ for i in range(7,27):
             results = model(frame, verbose=False)[0]
             bBoxes = [] 
             for result in results.boxes.data.tolist():
-                x1, y1, x2, y2, score, _ = result
+                x1, y1, x2, y2, score, class_id = result
+
 
             #for box in results.boxes[0]:
                 #x1, y1, x2, y2  = box
                 #score = result.scores
-
-                if score > 0.2:
+                
+                if(class_id in acceptedClasses and score > 0.2):
                     bBoxes.append((x1,y2,x2,y2))
                     cv2.rectangle(frame, (int(x1), int(y1)), (int(x2), int(y2)), (0, 255, 0), 1)
 
-            
+
             if(len(bBoxes) == 0):
                 cv2.imshow('Frame',frame)
                 cv2.waitKey(1)
@@ -95,7 +97,7 @@ for i in range(7,27):
 
 
 
-            #GET DISTANCE OF CAR
+            #GET DISTANCE TO CAR
             lx1, lx2 = bestLinePointsLeft
             rx1, rx2 = bestLinePointsRight
             if(not lx1 or not lx2 or not rx1 or not rx2):
