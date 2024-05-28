@@ -5,6 +5,16 @@ import numpy as np
 import sys
 
 
+#Returs true if the system can keep processing the input, false otherwise
+def canProcessVideo(inputVideos, video_source):
+    if(video_source == "screen"):
+        return True
+    elif(video_source == "video"):
+        return len(inputVideos) > 0
+    else:
+        return False
+    
+
 def drawLine(img, r, theta):
     imgHeight, _, _ = img.shape
     xCutBottom = int((r-imgHeight*np.sin(theta))/np.cos(theta))
