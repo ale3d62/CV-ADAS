@@ -1,12 +1,14 @@
 import cv2
 from lane_finder import findLane
+from car_finder import findCars
+from distance_calculator import getDistances
 from auxFunctions import *
 from time import time
+import sys
 
 #for screen capture
 import numpy as np
 from mss import mss
-from PIL import Image
 
 #YOLO
 from ultralytics import YOLO
@@ -26,6 +28,8 @@ resScaling = 1
 # - video: test videos at test_videos directory
 # - screen: screen capture
 video_source = "video" 
+maxLAge = 20
+maxYAge = 10
 #CAMERA PARAMETERS
 f = 2.5
 sensorPixelW = 0.008
@@ -48,6 +52,7 @@ inputVideos = [*range(7,27)]
 #MAIN LOOP
 while(canProcessVideo(inputVideos, video_source)):
     
+    #Get input video
     if(video_source == "video"):
         vid = cv2.VideoCapture('test_videos/test'+str(inputVideos[0])+'.mp4')
         inputVideos.pop(0)
@@ -60,13 +65,16 @@ while(canProcessVideo(inputVideos, video_source)):
     bestLinePointsLeft = (None, None)
     bestLinePointsRight = (None, None)
     ret = True
+    iFrame = 0
+    lastLFrame = -sys.maxsize
+    lastYFrame = -sys.maxsize
 
     #start timer
     st = time()
 
     while(ret):
 
-        # Capture frame-by-frame
+        #Get frame
         if(video_source == "video"):
             ret, frame = vid.read()
         else:  
@@ -80,25 +88,38 @@ while(canProcessVideo(inputVideos, video_source)):
         
 
         totalFrames += 1
+        iFrame += 1
 
 
         #Apply res scaling
         if(resScaling != 1):
             frame = cv2.resize(frame, (0,0), fx = resScaling, fy = resScaling, interpolation=cv2.INTER_NEAREST)
+
+
+                
+        #SCAN FOR LINES
+        stl = time()
+        frame, bestLinePointsLeft, bestLinePointsRight, linesUpdated = findLane(frame, bestLinePointsLeft, bestLinePointsRight, showLines)
+        totalTimeLane += (time()-stl)*1000
         
-        sty = time()
-        #SCAN FOR CARS
-        results = model(frame, verbose=False)[0]
-        bBoxes = [] 
-        #filter yolo results by class and confidence threshold
-        for result in results.boxes.data.tolist():
-            x1, y1, x2, y2, score, class_id = result
-            
-            if(class_id in acceptedClasses and score > 0.2):
-                bBoxes.append((x1,y2,x2,y2))
-                #draw car box in frame
-                cv2.rectangle(frame, (int(x1), int(y1)), (int(x2), int(y2)), (0, 255, 0), 1)
-        totalTimeYolo += (time()-sty)*1000
+        if(not linesUpdated):
+            if(iFrame - lastLFrame > maxLAge):
+                showFrame(frame)
+                continue
+        else:
+            lastLFrame = iFrame
+
+        
+        if(iFrame - lastYFrame > maxYAge):
+            #SCAN FOR CARS
+            sty = time()
+            bBoxes, bBoxesUpdated = findCars(model, frame, acceptedClasses)
+            totalTimeYolo += (time()-sty)*1000
+        else:
+            bBoxes, bBoxesUpdated = findCarsPartial(model, frame, acceptedClasses)
+        
+        if(bBoxesUpdated):
+            lastYFrame = iFrame
         
 
         #If there are no cars, skip to next frame
@@ -108,74 +129,18 @@ while(canProcessVideo(inputVideos, video_source)):
             continue
 
 
-        stl = time()
-        #SCAN FOR LINES
-        imgHeight, imgWidth, _ = frame.shape
-        halfImgHeight = int(imgHeight/2)
-        
-        #Find new lines
-        newBestLinePointsLeft, newBestLinePointsRight = findLane(frame)
 
-        #If new lines, update
-        if(newBestLinePointsLeft[0]):
-            bestLinePointsLeft = newBestLinePointsLeft
-        if(newBestLinePointsRight[0]):
-            bestLinePointsRight = newBestLinePointsRight
 
-        #Show lines
-        if(showLines):
-            if(bestLinePointsLeft[0] and bestLinePointsLeft[1]):
-                cv2.line(frame, (bestLinePointsLeft[1], halfImgHeight), (bestLinePointsLeft[0], imgHeight), (0, 0, 255), 2)
-            if(bestLinePointsRight[0] and bestLinePointsRight[1]):
-                cv2.line(frame, (bestLinePointsRight[1], halfImgHeight), (bestLinePointsRight[0], imgHeight), (0, 0, 255), 2)
-        totalTimeLane += (time()-stl)*1000
-        
         #GET DISTANCE TO CAR
-        lx1, lx2 = bestLinePointsLeft
-        rx1, rx2 = bestLinePointsRight
-        if(not lx1 or not lx2 or not rx1 or not rx2):
-            cv2.imshow('Frame',frame)
-            cv2.waitKey(1)
-            continue
-        
-        #get lines equations
-        lm = halfImgHeight/(lx2-lx1)
-        lb = -lm * lx1
-        rm = halfImgHeight/(rx2-rx1)
-        rb = -rm * rx1
-
-        #flip lines equations (as increasing means going down in the image)
-        lm = -lm
-        lb = -lb + imgHeight
-        rm = -rm
-        rb = -rb + imgHeight
-
-        #get vanishing point coordinates
-        vpx = (rb-lb) / (lm-rm)
-        vpy = lm*vpx + lb
-
-        #process boxes for distances
-        for bBox in bBoxes:
-            x1, y1, x2, y2 = bBox
-            
-            lx3 = (y2-lb)/lm
-            rx3 = (y2-rb)/rm
-
-            #if car is in lane
-            if(carInlane(x1,x2,y2, lx3, rx3, vpy, vpx, imgHeight)):
-                d = (f*roadWidth*imgWidth)/((rx3-lx3)*(sensorPixelW*imgWidth))
-                d = d/1000
-                cv2.putText(frame, "Distance: {:6.2f}m".format(d), (int(x1), int(y1)), cv2.FONT_HERSHEY_PLAIN, fontScale=1, thickness=1, color=(100, 100, 255))
+        distances = getDistances(frame, bBoxes, bestLinePointsLeft, bestLinePointsRight, roadWidth, sensorPixelW, f)
+        for distance in distances:
+            d, x1, y1, x2, = distance
+            cv2.putText(frame, "Distance: {:6.2f}m".format(d), (int(x1), int(y1)), cv2.FONT_HERSHEY_PLAIN, fontScale=1, thickness=1, color=(100, 100, 255))
 
 
         #show new frame
-        cv2.imshow('Frame',frame)
-        # Press Q on keyboard to  exit
-        if cv2.waitKey(1) & 0xFF == ord('q'):
-            break
-        # Break the loop
-        else: 
-            break
+        showFrame(frame)
+
 
 
     #Measure average time

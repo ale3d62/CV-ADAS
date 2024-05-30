@@ -15,6 +15,11 @@ def canProcessVideo(inputVideos, video_source):
         return False
     
 
+def showFrame(frame):
+    cv2.imshow('Frame',frame)
+    cv2.waitKey(1)
+
+
 def drawLine(img, r, theta):
     imgHeight, _, _ = img.shape
     xCutBottom = int((r-imgHeight*np.sin(theta))/np.cos(theta))
@@ -152,36 +157,4 @@ def getBestLine(linePoints, threshold, k, rec):
         else:
             return getBestLine([linePointsBottom[mask].tolist(), linePointsTop[mask].tolist()], threshold, max(5, len(mask)-mask.sum()), True)
     else:
-        return [None, None]
-
-
-
-
-def carInlane(x1,x2,y2, lx3, rx3, vpy, vpx, imgHeight):
-    
-    #if y2 is at the wrong height
-    if(y2 > imgHeight or y2 < vpy):
-        return False 
-    
-
-    #Detect if car is to the left, center, or right
-    #center
-    if(x1 < vpx and x2 > vpx):
-        return True
-    
-    upPercent = (imgHeight-y2) / (imgHeight-vpy)
-    if(upPercent < 0.42):
-        return False
-
-    boxWidth = x2-x1
-
-    #left
-    if(x2 < vpx):
-        return (x1 + boxWidth*upPercent*0.9 > lx3)
-
-    #right
-    if(x1 > vpx):
-        return (x2 - boxWidth*upPercent*0.9 < rx3)
-
-    return False
-    
+        return [None, None]    

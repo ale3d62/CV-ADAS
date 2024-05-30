@@ -5,29 +5,43 @@ from time import time
 from auxFunctions import *
 
 
-def findLane(img):
+
+def show_lines(img, bestLinePointsLeft, bestLinePointsRight):
+    imgHeight, _, _ = img.shape
+    halfImgHeight = int(imgHeight/2)
+
+    if(bestLinePointsLeft[0] and bestLinePointsLeft[1]):
+        cv2.line(img, (bestLinePointsLeft[1], halfImgHeight), (bestLinePointsLeft[0], imgHeight), (0, 0, 255), 2)
+    if(bestLinePointsRight[0] and bestLinePointsRight[1]):
+        cv2.line(img, (bestLinePointsRight[1], halfImgHeight), (bestLinePointsRight[0], imgHeight), (0, 0, 255), 2)
+    
+    return img
+
+
+
+def findLane(img, bestLinePointsLeft, bestLinePointsRight, showLines):
 
     #CROP TO HALF THE HEIGHT
     #st = time() 135 480
     imgHeight, imgWidth, _ = img.shape
     halfImgHeight = int(imgHeight/2)
-    img = img[halfImgHeight:imgHeight, 1:imgWidth]
+    halfImg = img[halfImgHeight:imgHeight, 1:imgWidth]
     #print("Cropping time: " + str((time()-st)*1000) + "ms")
 
 
     #MASk
     #st = time()x1,y1,x2,y2
     vertices = np.array([[0, halfImgHeight], [round(imgWidth*0.3), 0], [round(imgWidth*0.7), 0], [imgWidth, halfImgHeight]], dtype=np.int32)
-    mask = np.zeros_like(img)
+    mask = np.zeros_like(halfImg)
     cv2.fillPoly(mask, [vertices], (255, 255, 255))
-    img = cv2.bitwise_and(img, mask)
+    halfImg = cv2.bitwise_and(halfImg, mask)
     #print("Mask time: " + str((time()-st)*1000) + "ms")
 
 
     #LAB
     #st = time()
-    lab = np.zeros_like(img)
-    cv2.cvtColor(img, cv2.COLOR_BGR2LAB, lab)
+    lab = np.zeros_like(halfImg)
+    cv2.cvtColor(halfImg, cv2.COLOR_BGR2LAB, lab)
 
     #Channels: [Light, Green/Magenta, Blue/Yellow] 1-255 in all 3 channels
     #print(np.mean(lab[:,:,0]))
@@ -36,7 +50,7 @@ def findLane(img):
 
     mask = cv2.inRange(lab, lower_white, upper_white)
     
-    colorMask = cv2.bitwise_and(img,img, mask= mask)
+    colorMask = cv2.bitwise_and(halfImg,halfImg, mask= mask)
     #print("LAB time: " + str((time()-st)*1000) + "ms")
 
     #colorMask = cv2.morphologyEx(lab[:,:,0], cv2.MORPH_TOPHAT, kernel)
@@ -73,7 +87,9 @@ def findLane(img):
 
     #st = time()
     if(type(lines) == NoneType):
-        return ((None, None), (None,None))
+        if(showLines):
+            img = show_lines(img, bestLinePointsLeft, bestLinePointsRight)
+        return (img, bestLinePointsLeft, bestLinePointsRight)
 
     #Lines processing
     linesLeft = [[],[]]
@@ -128,8 +144,8 @@ def findLane(img):
     bestLinePointsRight = getBestLine(linesRight, 30, max(5, int(len(linesRight))), False)
     #print("BEST LINE time: " + str((time()-st)*1000) + "ms")
 
-
-    return (bestLinePointsLeft,bestLinePointsRight)
+    img = show_lines(img, bestLinePointsLeft, bestLinePointsRight)
+    return (img, bestLinePointsLeft,bestLinePointsRight)
 
 
 
