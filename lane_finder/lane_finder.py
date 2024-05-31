@@ -21,6 +21,7 @@ def show_lines(img, bestLinePointsLeft, bestLinePointsRight):
 
 def findLane(img, bestLinePointsLeft, bestLinePointsRight, showLines):
 
+    linesUpdated = False
     #CROP TO HALF THE HEIGHT
     #st = time() 135 480
     imgHeight, imgWidth, _ = img.shape
@@ -89,7 +90,7 @@ def findLane(img, bestLinePointsLeft, bestLinePointsRight, showLines):
     if(type(lines) == NoneType):
         if(showLines):
             img = show_lines(img, bestLinePointsLeft, bestLinePointsRight)
-        return (img, bestLinePointsLeft, bestLinePointsRight)
+        return (img, bestLinePointsLeft, bestLinePointsRight, linesUpdated)
 
     #Lines processing
     linesLeft = [[],[]]
@@ -140,12 +141,22 @@ def findLane(img, bestLinePointsLeft, bestLinePointsRight, showLines):
     #bestLinePointsRight = getBestLine_Debug(rgbEdges, linesRight, 30, max(5, int(len(linesRight))), False)
     #return rgbEdges
     #st = time()
-    bestLinePointsLeft = getBestLine(linesLeft, 30, max(5, int(len(linesRight))), False)
-    bestLinePointsRight = getBestLine(linesRight, 30, max(5, int(len(linesRight))), False)
+    newBestLinePointsLeft = getBestLine(linesLeft, 30, max(5, int(len(linesRight))), False)
+    newBestLinePointsRight = getBestLine(linesRight, 30, max(5, int(len(linesRight))), False)
+
+    if(newBestLinePointsLeft[0]):
+        bestLinePointsLeft = newBestLinePointsLeft
+    if(newBestLinePointsRight[0]):
+        bestLinePointsRight = newBestLinePointsRight
     #print("BEST LINE time: " + str((time()-st)*1000) + "ms")
 
-    img = show_lines(img, bestLinePointsLeft, bestLinePointsRight)
-    return (img, bestLinePointsLeft,bestLinePointsRight)
+    if(newBestLinePointsLeft[0] and newBestLinePointsRight[0]):
+        linesUpdated = True
+
+    if(showLines):
+        img = show_lines(img, bestLinePointsLeft, bestLinePointsRight)
+
+    return (img, bestLinePointsLeft,bestLinePointsRight, linesUpdated)
 
 
 

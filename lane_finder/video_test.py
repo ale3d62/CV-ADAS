@@ -1,6 +1,6 @@
 import cv2
 from lane_finder import findLane
-from car_finder import findCars
+from car_finder import findCars, findCarsPartial
 from distance_calculator import getDistances
 from auxFunctions import *
 from time import time
@@ -15,7 +15,7 @@ from ultralytics import YOLO
 
 
 #----------PARAMETERS----------------
-modelName = "yolov8x.pt"
+modelName = "yolov8n.pt"
 #Predictions below this confidence value are skipped (range: [0-1])
 yoloConfidenceThreshold = 0.2 
 #Indexes of the only yolo object classes to consider
@@ -24,6 +24,7 @@ showLines = True
 #To scale the video down and make it faster
 # number in the range (0-1]
 resScaling = 1
+searchRegion = 1
 #Source of the image to process
 # - video: test videos at test_videos directory
 # - screen: screen capture
@@ -45,7 +46,7 @@ bounding_box = {'top': 0, 'left': 0, 'width': 1920, 'height': 1080}
 sct = mss()
 
 #indexes of the videos to use as input
-inputVideos = [*range(7,27)] 
+inputVideos = [*range(8,27)] 
 
 
 
@@ -104,29 +105,30 @@ while(canProcessVideo(inputVideos, video_source)):
         
         if(not linesUpdated):
             if(iFrame - lastLFrame > maxLAge):
+                bestLinePointsRight = (None, None)
+                bestLinePointsLeft = (None, None)
                 showFrame(frame)
                 continue
         else:
             lastLFrame = iFrame
 
-        
+
+        #SCAN FOR CARS
+        sty = time()
         if(iFrame - lastYFrame > maxYAge):
-            #SCAN FOR CARS
-            sty = time()
-            bBoxes, bBoxesUpdated = findCars(model, frame, acceptedClasses)
-            totalTimeYolo += (time()-sty)*1000
+            bBoxes = findCars(model, frame, acceptedClasses)
+            
         else:
-            bBoxes, bBoxesUpdated = findCarsPartial(model, frame, acceptedClasses)
-        
-        if(bBoxesUpdated):
-            lastYFrame = iFrame
-        
+            #bBoxes = findCarsPartial(model, frame, acceptedClasses, bBoxes, searchRegion)
+            bBoxes = findCars(model, frame, acceptedClasses)
+        totalTimeYolo += (time()-sty)*1000
 
         #If there are no cars, skip to next frame
         if(len(bBoxes) == 0):
-            cv2.imshow('Frame',frame)
-            cv2.waitKey(1)
+            showFrame(frame)
             continue
+
+        lastYFrame = iFrame
 
 
 
