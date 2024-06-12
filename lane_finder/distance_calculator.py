@@ -1,6 +1,3 @@
-import cv2
-
-
 def carInlane(x1,x2,y2, lx3, rx3, vpy, vpx, imgHeight):
     
     #if y2 is at the wrong height

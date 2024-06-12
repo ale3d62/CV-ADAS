@@ -23,14 +23,14 @@ acceptedClasses = set([2, 3, 4, 6, 7])
 showLines = True
 #To scale the video down and make it faster
 # number in the range (0-1]
-resScaling = 1
-searchRegion = 1
+resScaling = 0.5
+searchRegion = 0.5
 #Source of the image to process
 # - video: test videos at test_videos directory
 # - screen: screen capture
 video_source = "video" 
 maxLAge = 20
-maxYAge = 10
+maxYAge = 5
 #CAMERA PARAMETERS
 f = 2.5
 sensorPixelW = 0.008
@@ -69,6 +69,7 @@ while(canProcessVideo(inputVideos, video_source)):
     iFrame = 0
     lastLFrame = -sys.maxsize
     lastYFrame = -sys.maxsize
+    bBoxes = []
 
     #start timer
     st = time()
@@ -116,11 +117,13 @@ while(canProcessVideo(inputVideos, video_source)):
         #SCAN FOR CARS
         sty = time()
         if(iFrame - lastYFrame > maxYAge):
-            bBoxes = findCars(model, frame, acceptedClasses)
+            bBoxes = findCars(model, frame, acceptedClasses, True)
             
+            if(len(bBoxes) > 0):
+                lastYFrame = iFrame
         else:
-            #bBoxes = findCarsPartial(model, frame, acceptedClasses, bBoxes, searchRegion)
-            bBoxes = findCars(model, frame, acceptedClasses)
+            bBoxes = findCarsPartial(model, frame, acceptedClasses, bBoxes, searchRegion)
+            #bBoxes = findCars(model, frame, acceptedClasses)
         totalTimeYolo += (time()-sty)*1000
 
         #If there are no cars, skip to next frame
@@ -128,7 +131,6 @@ while(canProcessVideo(inputVideos, video_source)):
             showFrame(frame)
             continue
 
-        lastYFrame = iFrame
 
 
 
