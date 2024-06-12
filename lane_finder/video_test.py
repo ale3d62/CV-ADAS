@@ -16,6 +16,8 @@ from ultralytics import YOLO
 
 #----------PARAMETERS----------------
 modelName = "yolov8n.pt"
+nYoloRegionsW = 3
+nYoloRegionsH = 3
 #Predictions below this confidence value are skipped (range: [0-1])
 yoloConfidenceThreshold = 0.2 
 #Indexes of the only yolo object classes to consider
@@ -24,7 +26,6 @@ showLines = True
 #To scale the video down and make it faster
 # number in the range (0-1]
 resScaling = 0.5
-searchRegion = 0.5
 #Source of the image to process
 # - video: test videos at test_videos directory
 # - screen: screen capture
@@ -70,6 +71,9 @@ while(canProcessVideo(inputVideos, video_source)):
     lastLFrame = -sys.maxsize
     lastYFrame = -sys.maxsize
     bBoxes = []
+    yoloRegions = [] #Matrix where each cell is (regionX1, regionY1, regionX2, regionY2, hasCar)
+
+
 
     #start timer
     st = time()
@@ -88,6 +92,23 @@ while(canProcessVideo(inputVideos, video_source)):
         if ret == False:
             break
         
+        #If first iteration
+        if(totalFrames == 0):
+            #Initialize yoloRegions
+            frameH, frameW, _ = frame.shape
+            frameH = int(frameH*resScaling)
+            frameW = int(frameW*resScaling)
+
+            for i in range(nYoloRegionsW):
+                yoloRegions.append([])
+                for j in range(nYoloRegionsH):
+                    regionX1 = frameW * j
+                    regionY1 = frameH * i
+                    regionX2 = frameW * (j+1) - 1
+                    regionY2 = frameH * (i+1) - 1
+                    yoloRegions[i].append(regionX1, regionY1, regionX2, regionY2, False)
+
+
 
         totalFrames += 1
         iFrame += 1
@@ -117,12 +138,12 @@ while(canProcessVideo(inputVideos, video_source)):
         #SCAN FOR CARS
         sty = time()
         if(iFrame - lastYFrame > maxYAge):
-            bBoxes = findCars(model, frame, acceptedClasses, True)
+            bBoxes = findCars(model, frame, acceptedClasses, True, yoloRegions)
             
             if(len(bBoxes) > 0):
                 lastYFrame = iFrame
         else:
-            bBoxes = findCarsPartial(model, frame, acceptedClasses, bBoxes, searchRegion)
+            bBoxes = findCarsPartial(model, frame, acceptedClasses, bBoxes, yoloRegionsW)
             #bBoxes = findCars(model, frame, acceptedClasses)
         totalTimeYolo += (time()-sty)*1000
 

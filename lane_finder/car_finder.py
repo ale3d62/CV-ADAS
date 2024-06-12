@@ -1,9 +1,8 @@
 import cv2
-from concurrent.futures import ThreadPoolExecutor
 
 
 #Returns the bboxes of the acceptedClasses found in the frame 
-def findCars(model, frame, acceptedClasses, showBboxes):
+def findCars(model, frame, acceptedClasses, showBboxes, yoloRegions):
     results = model(frame, verbose=False)[0]
     bBoxes = [] 
     #filter yolo results by class and confidence threshold
@@ -17,7 +16,10 @@ def findCars(model, frame, acceptedClasses, showBboxes):
             y1 = int(y1)
             y2 = int(y2)
 
-            bBoxes.append((x1,y1,x2,y2))
+            bBox = (x1,y1,x2,y2)
+            bBoxes.append(bBox)
+
+            yoloRegions = updateYoloRegions(yoloRegions, bBox)
 
             if(showBboxes):
                 #draw car box in frame
@@ -26,9 +28,18 @@ def findCars(model, frame, acceptedClasses, showBboxes):
     return bBoxes
 
 
+def updateYoloRegions(yoloRegions, bBox):
+    x1, y1, x2, y2 = bBox
+
+    for i in range(len(yoloRegions)-1):
+        if(x1 > yoloRegions[i][0][0] and x1 < yoloRegions[i+1][0][0]):
+            
+
+
+
 
 #Updates the position of each bbox in bboxes
-def findCarsPartial(model, frame, acceptedClasses, bBoxes, searchRegion):
+def findCarsPartial(model, frame, acceptedClasses, bBoxes, yoloRegions):
 
     newBBoxes = []
     frameHeight, frameWidth, _ = frame.shape
