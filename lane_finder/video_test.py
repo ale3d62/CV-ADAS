@@ -1,6 +1,6 @@
 import cv2
 from lane_finder import findLane
-from car_finder import findCars, findCarsPartial
+from car_finder import findCars
 from distance_calculator import getDistances
 from auxFunctions import *
 from time import time
@@ -16,8 +16,6 @@ from ultralytics import YOLO
 
 #----------PARAMETERS----------------
 modelName = "yolov8n.pt"
-nYoloRegionsW = 2
-nYoloRegionsH = 2
 #Predictions below this confidence value are skipped (range: [0-1])
 yoloConfidenceThreshold = 0.2 
 #Indexes of the only yolo object classes to consider
@@ -31,7 +29,6 @@ resScaling = 0.5
 # - screen: screen capture
 video_source = "video" 
 maxLAge = 20
-maxYAge = 5
 #CAMERA PARAMETERS
 f = 2.5
 sensorPixelW = 0.008
@@ -70,8 +67,6 @@ while(canProcessVideo(inputVideos, video_source)):
     iFrame = 0
     lastLFrame = -sys.maxsize
     lastYFrame = -sys.maxsize
-    bBoxes = []
-    yoloRegions = [[False for _ in range(nYoloRegionsW)] for _ in range(nYoloRegionsH)]
 
 
 
@@ -91,12 +86,6 @@ while(canProcessVideo(inputVideos, video_source)):
 
         if ret == False:
             break
-
-        #If first iteration
-        if(totalFrames == 0):
-            frameH, frameW, _ = frame.shape
-            yoloRegionW = int(frameW / nYoloRegionsW)
-            yoloRegionH = int(frameH / nYoloRegionsH)
 
 
         totalFrames += 1
@@ -126,22 +115,13 @@ while(canProcessVideo(inputVideos, video_source)):
 
         #SCAN FOR CARS
         sty = time()
-        if(iFrame - lastYFrame > maxYAge):
-            bBoxes, yoloRegions = findCars(model, frame, acceptedClasses, True, yoloRegions, yoloRegionW, yoloRegionH)
-            
-            if(len(bBoxes) > 0):
-                lastYFrame = iFrame
-        else:
-            bBoxes, yoloRegions = findCarsPartial(model, frame, acceptedClasses, bBoxes, yoloRegions, yoloRegionW, yoloRegionH)
-            #bBoxes = findCars(model, frame, acceptedClasses)
+        bBoxes = findCars(model, frame, acceptedClasses)
         totalTimeYolo += (time()-sty)*1000
 
         #If there are no cars, skip to next frame
         if(len(bBoxes) == 0):
             showFrame(frame)
             continue
-
-
 
 
 
