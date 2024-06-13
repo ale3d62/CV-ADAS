@@ -44,10 +44,10 @@ def getDistances(frame, bBoxes, bestLinePointsLeft, bestLinePointsRight, roadWid
     imgHeight, imgWidth, _ = frame.shape
     halfImgHeight = int(imgHeight/2)
 
-    #get lines equations
-    lm = halfImgHeight/(lx2-lx1)
+    #get lines equations (y = mx + b)
+    lm = halfImgHeight/(lx2-lx1) # left
     lb = -lm * lx1
-    rm = halfImgHeight/(rx2-rx1)
+    rm = halfImgHeight/(rx2-rx1) # right
     rb = -rm * rx1
 
     #flip lines equations (as increasing means going down in the image)
@@ -64,6 +64,7 @@ def getDistances(frame, bBoxes, bestLinePointsLeft, bestLinePointsRight, roadWid
     for bBox in bBoxes:
         x1, y1, x2, y2 = bBox
         
+        #coordinates x of the lines at the car's height
         lx3 = (y2-lb)/lm
         rx3 = (y2-rb)/rm
 
