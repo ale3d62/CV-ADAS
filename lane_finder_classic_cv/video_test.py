@@ -16,19 +16,26 @@ from ultralytics import YOLO
 
 #----------PARAMETERS----------------
 modelName = "yolov8n.pt"
+
 #Predictions below this confidence value are skipped (range: [0-1])
 yoloConfidenceThreshold = 0.2 
+
 #Indexes of the only yolo object classes to consider
 acceptedClasses = set([2, 3, 4, 6, 7])
 showLines = True
+
 #To scale the video down and make it faster
 # number in the range (0-1]
 resScaling = 0.5
+
 #Source of the image to process
-# - video: test videos at test_videos directory
+# - video: test videos at video_path directory
 # - screen: screen capture
 video_source = "video" 
+video_path = "../test_videos/"
+
 maxLAge = 20
+
 #CAMERA PARAMETERS
 f = 2.5
 sensorPixelW = 0.008
@@ -53,7 +60,7 @@ while(canProcessVideo(inputVideos, video_source)):
     
     #Get input video
     if(video_source == "video"):
-        vid = cv2.VideoCapture('test_videos/test'+str(inputVideos[0])+'.mp4')
+        vid = cv2.VideoCapture(video_path+'test'+str(inputVideos[0])+'.mp4')
         inputVideos.pop(0)
     
     #initialize variables
