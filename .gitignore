@@ -5,5 +5,7 @@ test_images/
 .vscode/
 *.pt
 *.onnx
+*.mp4
 deep_sort/
 tracker.py
+venv
