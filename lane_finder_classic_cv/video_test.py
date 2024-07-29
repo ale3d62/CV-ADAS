@@ -29,17 +29,23 @@ showLines = True
 resScaling = 0.5
 
 #Source of the image to process
-# - video: test videos at video_path directory
+# - video: test videos at videoPath directory
 # - screen: screen capture
-video_source = "video" 
-video_path = "../test_videos/"
+# - camera: device camera
+videoSource = "video" 
+videoPath = "../test_videos/"
 
-maxLAge = 20
+#Maximum number of frames without updating lane
+maxLAge = 10
 
 #CAMERA PARAMETERS
+cameraId = 0
 f = 2.5
 sensorPixelW = 0.008
 roadWidth = 3600
+
+#DEBUGGING
+showTimes = True
 #------------------------------------
 
 
@@ -53,15 +59,17 @@ sct = mss()
 #indexes of the videos to use as input
 inputVideos = [*range(8,27)] 
 
-
+if(videoSource == "camera"):
+    vid = cv2.VideoCapture(cameraId)
 
 #MAIN LOOP
-while(canProcessVideo(inputVideos, video_source)):
+while(canProcessVideo(inputVideos, videoSource)):
     
     #Get input video
-    if(video_source == "video"):
-        vid = cv2.VideoCapture(video_path+'test'+str(inputVideos[0])+'.mp4')
+    if(videoSource == "video"):
+        vid = cv2.VideoCapture(videoPath+'test'+str(inputVideos[0])+'.mp4')
         inputVideos.pop(0)
+
     
     #initialize variables
     totalTime = 0
@@ -72,8 +80,8 @@ while(canProcessVideo(inputVideos, video_source)):
     bestLinePointsRight = (None, None)
     ret = True
     iFrame = 0
-    lastLFrame = -sys.maxsize
-    lastYFrame = -sys.maxsize
+    lastLFrame = -sys.maxsize #-INF
+    lastYFrame = -sys.maxsize #-INF
 
 
 
@@ -83,7 +91,7 @@ while(canProcessVideo(inputVideos, video_source)):
     while(ret):
 
         #Get frame
-        if(video_source == "video"):
+        if(videoSource == "video" or videoSource == "camera"):
             ret, frame = vid.read()
         else:  
             sct_img = sct.grab(bounding_box)
@@ -109,7 +117,7 @@ while(canProcessVideo(inputVideos, video_source)):
         stl = time()
         frame, bestLinePointsLeft, bestLinePointsRight, linesUpdated = findLane(frame, bestLinePointsLeft, bestLinePointsRight, showLines)
         totalTimeLane += (time()-stl)*1000
-        
+        frame = cv2.resize(frame, (1280, 720))
         if(not linesUpdated):
             if(iFrame - lastLFrame > maxLAge):
                 bestLinePointsRight = (None, None)
@@ -147,7 +155,7 @@ while(canProcessVideo(inputVideos, video_source)):
     #Measure average time
     totalTime += (time()-st)*1000
     if(totalFrames>0):
-        pass
-        print("avg time yolo: "+ str(totalTimeYolo/totalFrames) + "ms")
-        print("avg time lane: "+ str(totalTimeLane/totalFrames) + "ms")
-        print("avg time: "+ str(totalTime/totalFrames) + "ms")
+        if(showTimes):
+            print("[INFO] avg time car detection: "+ str(totalTimeYolo/totalFrames) + "ms")
+            print("[INFO] avg time lane detection: "+ str(totalTimeLane/totalFrames) + "ms")
+            print("[INFO] avg time total: "+ str(totalTime/totalFrames) + "ms")

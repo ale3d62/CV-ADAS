@@ -62,7 +62,7 @@ def getDistances(frame, bBoxes, bestLinePointsLeft, bestLinePointsRight, roadWid
 
     #process boxes for distances
     for bBox in bBoxes:
-        x1, y1, x2, y2 = bBox
+        x1, y1, x2, y2, id = bBox
         
         #coordinates x of the lines at the car's height
         lx3 = (y2-lb)/lm

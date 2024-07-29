@@ -1,4 +1,4 @@
-from types import NoneType
+NoneType = type(None)
 import cv2
 import numpy as np
 from auxFunctions import *

@@ -1,15 +1,15 @@
-from types import NoneType
 import cv2
 import numpy as np
 #from sklearn.neighbors import NearestNeighbors
 import sys
 
+NoneType = type(None)
 
 #Returs true if the system can keep processing the input, false otherwise
-def canProcessVideo(inputVideos, video_source):
-    if(video_source == "screen"):
+def canProcessVideo(inputVideos, videoSource):
+    if(videoSource == "screen" or videoSource == "camera"):
         return True
-    elif(video_source == "video"):
+    elif(videoSource == "video"):
         return len(inputVideos) > 0
     else:
         return False

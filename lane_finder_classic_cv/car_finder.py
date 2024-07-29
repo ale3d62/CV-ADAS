@@ -2,11 +2,17 @@ import cv2
 
 #Returns the bboxes of the acceptedClasses found in the frame 
 def findCars(model, frame, acceptedClasses):
-    results = model(frame, verbose=False)[0]
+    #results = model(frame, verbose=False)[0]
+    results = model.track(source=frame, conf=0.3, iou=0.5, verbose=False)[0]
     bBoxes = [] 
     #filter yolo results by class and confidence threshold
     for result in results.boxes.data.tolist():
-        x1, y1, x2, y2, score, class_id = result
+
+        if(len(result) == 7):
+            x1, y1, x2, y2, id, score, class_id = result
+        else:
+            continue
+            #x1, y1, x2, y2, score, class_id = result
         
         if(class_id in acceptedClasses and score > 0.2):
 
@@ -15,10 +21,13 @@ def findCars(model, frame, acceptedClasses):
             y1 = int(y1)
             y2 = int(y2)
 
-            bBox = (x1,y1,x2,y2)
+            bBox = (x1,y1,x2,y2, id)
             bBoxes.append(bBox)
 
             #draw car box in frame
+            
             cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 1)
+            cv2.putText(frame, "ID: {:6.2f}m".format(id), (x1, y1), cv2.FONT_HERSHEY_PLAIN, fontScale=1, thickness=1, color=(100, 100, 255))
+                
             
     return bBoxes

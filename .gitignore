@@ -1,11 +1,24 @@
-test_videos/
+#Temp files
 __pycache__/
 build/
-test_images/
 .vscode/
-*.pt
-*.onnx
-*.mp4
+venv
+runs
+
+
+#Test files
 deep_sort/
 tracker.py
-venv
+
+
+#Videos - Images
+test_images/
+test_videos/
+*.mp4
+
+
+#Model files
+*.bin
+*.param
+*.pt
+*.onnx

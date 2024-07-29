@@ -254,8 +254,8 @@ class BasePredictor:
     @smart_inference_mode()
     def stream_inference(self, source=None, model=None):
         """Streams real-time inference on camera feed and saves results to file."""
-        if self.args.verbose:
-            LOGGER.info('')
+        #if self.args.verbose:
+        #    LOGGER.info('')
 
         # Setup model
         if not self.model:
@@ -264,15 +264,15 @@ class BasePredictor:
         self.setup_source(source if source is not None else self.args.source)
 
         # Check if save_dir/ label file exists
-        if self.args.save or self.args.save_txt:
-            (self.save_dir / 'labels' if self.args.save_txt else self.save_dir).mkdir(parents=True, exist_ok=True)
+#        if self.args.save or self.args.save_txt:
+#            (self.save_dir / 'labels' if self.args.save_txt else self.save_dir).mkdir(parents=True, exist_ok=True)
         # Warmup model
         if not self.done_warmup:
             self.model.warmup(imgsz=(1 if self.model.pt or self.model.triton else self.dataset.bs, 3, *self.imgsz))
             self.done_warmup = True
 
         self.seen, self.windows, self.batch, profilers = 0, [], None, (ops.Profile(), ops.Profile(), ops.Profile())
-        self.run_callbacks('on_predict_start')
+#        self.run_callbacks('on_predict_start')
         for batch in self.dataset:
             # self.run_callbacks('on_predict_batch_start')
             self.batch = batch
@@ -283,7 +283,7 @@ class BasePredictor:
             # Preprocess
             with profilers[0]:
                 im = self.preprocess(im0s)
-
+            
             # Inference
             with profilers[1]:
                 preds = self.model(im, augment=self.args.augment, visualize=visualize)
