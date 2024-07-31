@@ -2,14 +2,18 @@ import cv2
 
 class CarDetector:
 
-    def __init__(self, _iouThresh):
-        self.bBoxes = []
+    def __init__(self, _iouThresh, camParams):
+        self.cars = []
         self.iouThresh = _iouThresh
         self.id = 0
+        self.f = camParams["f"]
+        self.sensorPixelW = camParams["sensorPixelW"]
+        self.roadWidth = camParams["roadWidth"]
+
 
 
     def nCars(self):
-        return len(self.bBoxes)
+        return len(self.cars)
 
 
 
@@ -32,50 +36,55 @@ class CarDetector:
 
         return iou
     
+
+
     def nextId(self):
         self.id += 1
         return self.id
+
 
 
     def updateCars(self, frame, newBboxes):
 
         #Replace previous bBoxes
         updatedBboxes = []
-        for bBox in self.bBoxes:
+        for bBox in self.cars:
 
             #if bBox has already been replaced, skip
-            if(bBox['new']):
+            if(bBox['updated']):
                 continue
 
             #calculate iou with every new bBox and get the best one
             ious = []
             for newBbox in newBboxes:
-                ious.append(self.calculateIou(newBbox, bBox['old']['bbox']))
+                ious.append(self.calculateIou(newBbox, bBox['new']['bbox']))
             
             
             maxIou = max(ious) if len(ious) > 0 else 0
             if maxIou > self.iouThresh:
                 iMaxIou = ious.index(maxIou)
+                bBox['old'] = bBox['new']
                 bBox['new'] = {"bbox": newBboxes[iMaxIou], "id": bBox['old']['id']}
+                bBox['updated'] = True
                 updatedBboxes.append(bBox)
                 newBboxes.pop(iMaxIou)
         
-        self.bBoxes = updatedBboxes
+        self.cars = updatedBboxes
                 
         
         #Add remaining newBboxes
         for newBbox in newBboxes:
-            self.bBoxes.append({"old": None, "new": {"bbox": newBbox, "id": self.nextId()}})
+            self.cars.append({"old": None, "new": {"bbox": newBbox, "id": self.nextId()}, "updated": True})
 
 
         #show bBoxes
-        for bBox in self.bBoxes:
+        for bBox in self.cars:
             x1, y1, x2, y2 = bBox['new']['bbox']
-            id = bBox['new']['id']
+            #id = bBox['new']['id']
             cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 1)
-            cv2.putText(frame, "ID: {:6.2f}m".format(id), (x1, y1), cv2.FONT_HERSHEY_PLAIN, fontScale=1, thickness=1, color=(100, 100, 255))
-            bBox['old'] = bBox['new']
-            bBox['new'] = None
+            #cv2.putText(frame, "ID: {:6.2f}m".format(id), (x1, y1), cv2.FONT_HERSHEY_PLAIN, fontScale=1, thickness=1, color=(100, 100, 255))
+            bBox['updated'] = False
+
              
 
 
@@ -104,7 +113,20 @@ class CarDetector:
                      
 
 
-    def carInlane(x1,x2,y2, lx3, rx3, vpy, vpx, imgHeight):
+    def updateDist(self, frameDim, bestLinePointsLeft, bestLinePointsRight):
+        
+        distances = []
+
+        for car in self.cars:
+            car['new']['distance'] = self.getDistance(frameDim, car['new']['bbox'], bestLinePointsLeft, bestLinePointsRight)
+            if car['new']['distance']:
+                distances.append(car['new'])
+
+        return distances
+
+
+
+    def carInlane(self, x1,x2,y2, lx3, rx3, vpy, vpx, imgHeight):
     
         #if y2 is at the wrong height
         if(y2 > imgHeight or y2 < vpy):
@@ -134,9 +156,7 @@ class CarDetector:
     
 
 
-    def getDistances(frame, bBoxes, bestLinePointsLeft, bestLinePointsRight, roadWidth, sensorPixelW, f):
-    
-        distances = []
+    def getDistance(self, frameDim, bBox, bestLinePointsLeft, bestLinePointsRight):
 
         #Get lines data
         lx1, lx2 = bestLinePointsLeft
@@ -144,10 +164,10 @@ class CarDetector:
 
         #if some lines data is missing
         if(not lx1 or not lx2 or not rx1 or not rx2):
-            return distances
+            return None
 
 
-        imgHeight, imgWidth, _ = frame.shape
+        imgHeight, imgWidth, _ = frameDim
         halfImgHeight = int(imgHeight/2)
 
         #get lines equations (y = mx + b)
@@ -166,20 +186,22 @@ class CarDetector:
         vpx = (rb-lb) / (lm-rm)
         vpy = lm*vpx + lb
 
-        #process boxes for distances
-        for bBox in bBoxes:
-            x1, y1, x2, y2, id = bBox
-            
-            #coordinates x of the lines at the car's height
-            lx3 = (y2-lb)/lm
-            rx3 = (y2-rb)/rm
 
-            #if car is in lane
-            if(carInlane(x1,x2,y2, lx3, rx3, vpy, vpx, imgHeight)):
-                d = (f*roadWidth*imgWidth)/((rx3-lx3)*(sensorPixelW*imgWidth))
-                d = d/1000
-                distances.append((d, x1, y1, x2))
-
+        x1, y1, x2, y2 = bBox
         
-        return distances
+        #coordinates x of the lines at the car's height
+        lx3 = (y2-lb)/lm
+        rx3 = (y2-rb)/rm
+
+        #if car is in lane
+        #if(self.carInlane(x1,x2,y2, lx3, rx3, vpy, vpx, imgHeight)):
+        d = (self.f*self.roadWidth*imgWidth)/((rx3-lx3)*(self.sensorPixelW*imgWidth))
+        d = d/1000
+
+        return d
+
+        #else:
+        #    return None
+
+
 

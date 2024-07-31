@@ -50,13 +50,16 @@ camParams = {
 #Algorithm parameters
 iouThresh = 0.5
 
+
 #DEBUGGING
 showTimes = True
+enableOptimizations = True
 #------------------------------------
 
 
 #Load yolo model
 model = YOLO(modelName)
+
 
 #for screen capture
 bounding_box = {'top': 0, 'left': 0, 'width': screenCaptureW, 'height': screenCaptureH}
@@ -67,6 +70,7 @@ inputVideos = [*range(8,27)]
 
 if(videoSource == "camera"):
     vid = cv2.VideoCapture(cameraId)
+
 
 #MAIN LOOP
 while(canProcessVideo(inputVideos, videoSource)):
@@ -88,7 +92,7 @@ while(canProcessVideo(inputVideos, videoSource)):
     iFrame = 0
     lastLFrame = -sys.maxsize #-INF
     lastYFrame = -sys.maxsize #-INF
-    carDetector = CarDetector(iouThresh)
+    carDetector = CarDetector(iouThresh, camParams)
 
 
 
@@ -124,16 +128,16 @@ while(canProcessVideo(inputVideos, videoSource)):
         stl = time()
         frame, bestLinePointsLeft, bestLinePointsRight, linesUpdated = findLane(frame, bestLinePointsLeft, bestLinePointsRight, showLines)
         totalTimeLane += (time()-stl)*1000
-        frame = cv2.resize(frame, (1280, 720))
         
-        if(not linesUpdated):
-            if(iFrame - lastLFrame > maxLAge):
-                bestLinePointsRight = (None, None)
-                bestLinePointsLeft = (None, None)
-                showFrame(frame)
-                continue
-        else:
-            lastLFrame = iFrame
+        if enableOptimizations:
+            if(not linesUpdated):
+                if(iFrame - lastLFrame > maxLAge):
+                    bestLinePointsRight = (None, None)
+                    bestLinePointsLeft = (None, None)
+                    showFrame(frame)
+                    continue
+            else:
+                lastLFrame = iFrame
         
 
         #SCAN FOR CARS
@@ -142,18 +146,18 @@ while(canProcessVideo(inputVideos, videoSource)):
         totalTimeYolo += (time()-sty)*1000
 
         #If there are no cars, skip to next frame
-        if(carDetector.nCars == 0):
+        if(carDetector.nCars() == 0):
             showFrame(frame)
             continue
         
 
-        """
         #GET DISTANCE TO CAR
-        distances = getDistances(frame, detectedCars, bestLinePointsLeft, bestLinePointsRight, camParams)
+        distances = carDetector.updateDist(frame.shape, bestLinePointsLeft, bestLinePointsRight)
         for distance in distances:
-            d, x1, y1, x2, = distance
+            d = distance['distance']
+            x1, y1, x2, y2 = distance['bbox']
             cv2.putText(frame, "Distance: {:6.2f}m".format(d), (int(x1), int(y1)), cv2.FONT_HERSHEY_PLAIN, fontScale=1, thickness=1, color=(100, 100, 255))
-        """
+
 
         #show new frame
         showFrame(frame)
