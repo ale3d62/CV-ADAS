@@ -1,10 +1,11 @@
 import cv2
 from lane_finder import findLane
 from car_finder import CarDetector
+from frame_visualizer import FrameVisualizer
 from auxFunctions import *
 from time import time
 import sys
-from frame_visualizer import FrameVisualizer
+
 
 #for screen capture
 import numpy as np
@@ -14,8 +15,9 @@ from mss import mss
 from ultralytics import YOLO
 
 
-#----------PARAMETERS----------------
+#----------PARAMETERS-----------------------------------------------
 modelName = "yolov8n.pt"
+modelPath = "../models/" 
 
 #Predictions below this confidence value are skipped (range: [0-1])
 yoloConfidenceThreshold = 0.2 
@@ -55,7 +57,7 @@ camParams = {
 visualizationMode = "server"
 #when selected mode is server:
 serverParameters = {
-    "ip": "0.0.0.0",
+    "ip": "127.0.0.1",
     "port": 5000
 }
 
@@ -66,14 +68,14 @@ iouThresh = 0.5
 #DEBUGGING
 showTimes = True
 enableOptimizations = True
-#------------------------------------
+#-------------------------------------------------------------
 
 
 #Load yolo model
-model = YOLO(modelName)
+model = YOLO(modelPath + modelName)
 
 #Load visualizer
-frameVisualizer = FrameVisualizer(visualizationMode)
+frameVisualizer = FrameVisualizer(visualizationMode, serverParameters)
 
 #for screen capture
 bounding_box = {'top': 0, 'left': 0, 'width': screenCaptureW, 'height': screenCaptureH}
