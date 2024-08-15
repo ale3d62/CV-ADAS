@@ -25,6 +25,7 @@ yoloConfidenceThreshold = 0.2
 #Indexes of the only yolo object classes to consider
 acceptedClasses = set([2, 3, 4, 6, 7])
 showLines = True
+showCars = True
 
 #To scale the video down and make it faster
 # number in the range (0-1]
@@ -108,7 +109,7 @@ while(canProcessVideo(inputVideos, videoSource)):
     iFrame = 0
     lastLFrame = -sys.maxsize #-INF
     lastYFrame = -sys.maxsize #-INF
-    carDetector = CarDetector(iouThresh, camParams)
+    carDetector = CarDetector(iouThresh, camParams, showCars)
 
 
 

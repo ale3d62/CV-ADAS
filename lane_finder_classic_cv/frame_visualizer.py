@@ -11,7 +11,7 @@ class FrameVisualizer:
     def __init__(self, mode, flaskParameters = {'ip': '0.0.0.0', 'port': 5000}):
         self._mode = mode
         if self._mode == "server":
-            self._flaskServer = self._flaskServer(self, flaskParameters)
+            self._flaskServer = self.FlaskServer(self, flaskParameters)
 
         self._should_stop = threading.Event()
         signal.signal(signal.SIGINT, self.signal_handler)

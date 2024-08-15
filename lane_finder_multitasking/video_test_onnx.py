@@ -21,7 +21,11 @@ modelPath = "../models/"
 #Predictions below this confidence value are skipped (range: [0-1])
 yoloConfidenceThreshold = 0.2 
 
-showLines = True
+#Select the predictions to show
+showSettings = {
+    "cars": False,
+    "lanes": False
+}
 
 #Source of the image to process
 # - video: test videos at videoPath directory
@@ -52,7 +56,9 @@ serverParameters = {
 }
 
 #ALGORITHM PARAMETERS
-iouThresh = 0.5
+yoloConfThresh = 0.3
+yoloIouThresh = 0.5
+trackIouThresh = 0.5
 
 
 #DEBUGGING
@@ -95,7 +101,7 @@ while(canProcessVideo(inputVideos, videoSource)):
     iFrame = 0
     lastLFrame = -sys.maxsize #-INF
     lastYFrame = -sys.maxsize #-INF
-    carDetector = CarDetector(iouThresh, camParams)
+    carDetector = CarDetector(yoloConfThresh, yoloIouThresh, trackIouThresh, camParams, showSettings)
 
 
 
