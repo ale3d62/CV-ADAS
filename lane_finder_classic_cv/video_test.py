@@ -35,13 +35,13 @@ resScaling = 0.5
 # - video: test videos at videoPath directory
 # - screen: screen capture
 # - camera: device camera
-videoSource = "video" 
+videoSource = "screen" 
 videoPath = "../test_videos/"
 screenCaptureW = 1920
 screenCaptureH = 1080
 
 #Maximum number of frames without updating lane
-maxLAge = 10
+maxLAge = 1000
 
 #CAMERA PARAMETERS
 cameraId = 0
@@ -55,10 +55,10 @@ camParams = {
 # - none: no visualization
 # - screen: on screen
 # - server: on web server 
-visualizationMode = "server"
+visualizationMode = "screen"
 #when selected mode is server:
 serverParameters = {
-    "ip": "127.0.0.1",
+    "ip": "0.0.0.0",
     "port": 5000
 }
 
@@ -169,11 +169,27 @@ while(canProcessVideo(inputVideos, videoSource)):
         
 
         #GET DISTANCE TO CAR
-        distances = carDetector.updateDist(frame.shape, bestLinePointsLeft, bestLinePointsRight)
+        carDetector.updateDist(frame.shape, bestLinePointsLeft, bestLinePointsRight)
+        """
         for distance in distances:
             d = distance['distance']
             x1, y1, x2, y2 = distance['bbox']
             cv2.putText(frame, "Distance: {:6.2f}m".format(d), (int(x1), int(y1)), cv2.FONT_HERSHEY_PLAIN, fontScale=1, thickness=1, color=(100, 100, 255))
+        """
+        #GET CAR SPEED
+        cars = carDetector.getCars()
+        for car in cars:
+            if(car['old']):
+                frameTime = car['new']['time'] - car['old']['time']
+
+                distanceDiff = car['old']['distance'] - car['new']['distance']
+                
+                #get speed in m/ms and convert to km/h
+                carSpeed = (distanceDiff/frameTime) * 3600
+                print(frameTime, distanceDiff, carSpeed)
+                #Display speed next to car
+                x1, y1, x2, y2 = car['new']['bbox']
+                cv2.putText(frame, "Rel Speed: {:6.2f}km/h".format(distanceDiff), (int(x1), int(y1)), cv2.FONT_HERSHEY_PLAIN, fontScale=1, thickness=1, color=(100, 100, 255))
 
 
         #show new frame

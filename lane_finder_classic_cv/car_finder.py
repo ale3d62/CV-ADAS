@@ -1,5 +1,5 @@
 import cv2
-
+from time import time
 class CarDetector:
 
     def __init__(self, trackingIouThresh, camParams, showCars):
@@ -10,11 +10,15 @@ class CarDetector:
         self._sensorPixelW = camParams["sensorPixelW"]
         self._roadWidth = camParams["roadWidth"]
         self._showCars = showCars
+        self._currentTime = None
 
 
 
     def nCars(self):
         return len(self._cars)
+    
+    def getCars(self):
+        return self._cars
 
 
 
@@ -55,19 +59,20 @@ class CarDetector:
             if(bBox['updated']):
                 continue
 
-            #calculate iou with every new bBox and get the best one
+            #calculate iou with every new bBox
             ious = []
             for newBbox in newBboxes:
                 ious.append(self.calculateIou(newBbox, bBox['new']['bbox']))
             
-            
+            #replace the current bBox with the new bBox with the best iou
             maxIou = max(ious) if len(ious) > 0 else 0
             if maxIou > self._trackingIouThresh:
                 iMaxIou = ious.index(maxIou)
                 bBox['old'] = bBox['new']
-                bBox['new'] = {"bbox": newBboxes[iMaxIou], "id": bBox['old']['id']}
+                bBox['new'] = {"bbox": newBboxes[iMaxIou], "id": bBox['old']['id'], "time": self._currentTime}
                 bBox['updated'] = True
                 updatedBboxes.append(bBox)
+                #remove from newBboxes list
                 newBboxes.pop(iMaxIou)
         
         self._cars = updatedBboxes
@@ -75,7 +80,7 @@ class CarDetector:
         
         #Add remaining newBboxes
         for newBbox in newBboxes:
-            self._cars.append({"old": None, "new": {"bbox": newBbox, "id": self.nextId()}, "updated": True})
+            self._cars.append({"old": None, "new": {"bbox": newBbox, "id": self.nextId(), "time": self._currentTime}, "updated": True})
 
 
         #show bBoxes
@@ -93,6 +98,8 @@ class CarDetector:
     #Returns the bboxes of the acceptedClasses found in the frame 
     def findCars(self, model, frame, acceptedClasses):
         results = model(frame, verbose=False, conf=0.2)[0]
+
+        self._currentTime = time()*1000
 
         newBboxes = []
         #filter yolo results by class
@@ -117,14 +124,14 @@ class CarDetector:
 
     def updateDist(self, frameDim, bestLinePointsLeft, bestLinePointsRight):
         
-        distances = []
+        #distances = []
 
         for car in self._cars:
             car['new']['distance'] = self.getDistance(frameDim, car['new']['bbox'], bestLinePointsLeft, bestLinePointsRight)
-            if car['new']['distance']:
-                distances.append(car['new'])
+            #if car['new']['distance']:
+            #    distances.append(car['new'])
 
-        return distances
+        #return distances
 
 
 

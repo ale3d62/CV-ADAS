@@ -22,7 +22,7 @@ class FrameVisualizer:
             self._flaskServer.updateFrame(frame)
         elif self._mode == "screen":
             cv2.imshow('Frame',frame)
-            cv2.waitKey(1)
+            cv2.waitKey(10)
 
 
     def signal_handler(self, sig, frame):
