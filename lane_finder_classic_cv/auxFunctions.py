@@ -15,10 +15,6 @@ def canProcessVideo(inputVideos, videoSource):
         return False
     
 
-def showFrame(frame):
-    cv2.imshow('Frame',frame)
-    cv2.waitKey(1)
-
 
 def drawLine(img, r, theta):
     imgHeight, _, _ = img.shape

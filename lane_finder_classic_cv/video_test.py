@@ -4,6 +4,7 @@ from car_finder import CarDetector
 from auxFunctions import *
 from time import time
 import sys
+from frame_visualizer import FrameVisualizer
 
 #for screen capture
 import numpy as np
@@ -47,7 +48,18 @@ camParams = {
     "roadWidth": 3600
 }
 
-#Algorithm parameters
+#VISUALIZATION
+# - none: no visualization
+# - screen: on screen
+# - server: on web server 
+visualizationMode = "server"
+#when selected mode is server:
+serverParameters = {
+    "ip": "0.0.0.0",
+    "port": 5000
+}
+
+#ALGORITHM PARAMETERS
 iouThresh = 0.5
 
 
@@ -60,6 +72,8 @@ enableOptimizations = True
 #Load yolo model
 model = YOLO(modelName)
 
+#Load visualizer
+frameVisualizer = FrameVisualizer(visualizationMode)
 
 #for screen capture
 bounding_box = {'top': 0, 'left': 0, 'width': screenCaptureW, 'height': screenCaptureH}
@@ -134,7 +148,7 @@ while(canProcessVideo(inputVideos, videoSource)):
                 if(iFrame - lastLFrame > maxLAge):
                     bestLinePointsRight = (None, None)
                     bestLinePointsLeft = (None, None)
-                    showFrame(frame)
+                    frameVisualizer.showFrame(frame)
                     continue
             else:
                 lastLFrame = iFrame
@@ -147,7 +161,7 @@ while(canProcessVideo(inputVideos, videoSource)):
 
         #If there are no cars, skip to next frame
         if(carDetector.nCars() == 0):
-            showFrame(frame)
+            frameVisualizer.showFrame(frame)
             continue
         
 
@@ -160,7 +174,7 @@ while(canProcessVideo(inputVideos, videoSource)):
 
 
         #show new frame
-        showFrame(frame)
+        frameVisualizer.showFrame(frame)
 
 
 

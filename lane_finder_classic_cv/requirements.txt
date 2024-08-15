@@ -1,3 +1,4 @@
 opencv-python
-mss #for screen capture
-ultralytics #for YOLO
+mss             #for screen capture
+ultralytics     #for YOLO
+flask           #for web server visualization

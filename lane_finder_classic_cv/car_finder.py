@@ -90,7 +90,7 @@ class CarDetector:
 
     #Returns the bboxes of the acceptedClasses found in the frame 
     def findCars(self, model, frame, acceptedClasses):
-        results = model(frame, verbose=False, stream=True, conf=0.2)[0]
+        results = model(frame, verbose=False, conf=0.2)[0]
 
         newBboxes = []
         #filter yolo results by class
