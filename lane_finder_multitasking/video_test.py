@@ -4,7 +4,6 @@ from frame_visualizer import FrameVisualizer
 from auxFunctions import *
 from time import time
 import sys
-import torch
 
 #for screen capture
 import numpy as np
@@ -23,8 +22,8 @@ yoloConfidenceThreshold = 0.2
 
 #Select the predictions to show
 showSettings = {
-    "cars": False,
-    "lanes": False
+    "cars": True,
+    "lanes": True
 }
 
 #Source of the image to process
@@ -48,7 +47,7 @@ camParams = {
 # - none: no visualization
 # - screen: on screen
 # - server: on web server 
-visualizationMode = "server"
+visualizationMode = "screen"
 #when selected mode is server:
 serverParameters = {
     "ip": "0.0.0.0",
