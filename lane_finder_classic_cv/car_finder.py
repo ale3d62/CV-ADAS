@@ -90,15 +90,15 @@ class CarDetector:
 
     #Returns the bboxes of the acceptedClasses found in the frame 
     def findCars(self, model, frame, acceptedClasses):
-        results = model(frame, verbose=False)[0]
+        results = model(frame, verbose=False, stream=True, conf=0.2)[0]
 
         newBboxes = []
-        #filter yolo results by class and confidence threshold
+        #filter yolo results by class
         for result in results.boxes.data.tolist():
 
             x1, y1, x2, y2, score, class_id = result
             
-            if(class_id in acceptedClasses and score > 0.2):
+            if(class_id in acceptedClasses):
 
                 x1 = int(x1)
                 x2 = int(x2)
