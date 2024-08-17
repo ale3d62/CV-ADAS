@@ -68,8 +68,9 @@ class CarDetector:
             maxIou = max(ious) if len(ious) > 0 else 0
             if maxIou > self._trackingIouThresh:
                 iMaxIou = ious.index(maxIou)
-                bBox['old'] = bBox['new']
-                bBox['new'] = {"bbox": newBboxes[iMaxIou], "id": bBox['old']['id'], "time": self._currentTime}
+                if not bBox['old']:
+                    bBox['old'] = {"distance": bBox['new']['distance'], "time": bBox['new']['time']}
+                bBox['new'] = {"bbox": newBboxes[iMaxIou], "time": self._currentTime, "distance": None, "speed": bBox['new']['speed']}
                 bBox['updated'] = True
                 updatedBboxes.append(bBox)
                 #remove from newBboxes list
@@ -80,7 +81,7 @@ class CarDetector:
         
         #Add remaining newBboxes
         for newBbox in newBboxes:
-            self._cars.append({"old": None, "new": {"bbox": newBbox, "id": self.nextId(), "time": self._currentTime}, "updated": True})
+            self._cars.append({"id": self.nextId(), "old": None, "new": {"bbox": newBbox, "time": self._currentTime, "distance": None, "speed": None}, "updated": True})
 
 
         #show bBoxes

@@ -25,11 +25,11 @@ class FrameVisualizer:
             cv2.waitKey(10)
 
 
-    def signal_handler(self, sig, frame):
-        print("Stopping Flask Server, please, exit the server page")
-        #Stop flask server
-        self._flaskServer.stop()
-        sys.exit(0)
+    def signal_handler(self):
+        if self._mode == "server":
+            print("Stopping Flask Server, please, exit the server page")
+            self._flaskServer.stop()
+            sys.exit(0)
 
 
     class FlaskServer:

@@ -1,26 +1,31 @@
 import cv2
-import numpy as np
 import torch
-class CarDetector:
+from time import time
+from time import sleep
 
-    def __init__(self, yoloConfThresh, yoloIouThresh, trackIouThresh, camParams, showSettings):
+class Detector:
+
+    def __init__(self, yoloConfThresh, yoloIouThresh, trackingIouThresh, camParams, showSettings):
         self._cars = []
         self._yoloConfThresh = yoloConfThresh
         self._yoloIouThresh = yoloIouThresh
-        self._trackIouThresh = trackIouThresh
+        self._trackingIouThresh = trackingIouThresh
         self._id = 0
         self._f = camParams["f"]
         self._sensorPixelW = camParams["sensorPixelW"]
         self._roadWidth = camParams["roadWidth"]
         self._showCars = showSettings["cars"]
         self._showLanes = showSettings["lanes"]
-
+        self._currentTime = None
+        self._laneMask = None
+        self._minLineWidth = 4
 
 
     def nCars(self):
         return len(self._cars)
 
-
+    def getCars(self):
+        return self._cars
 
     def calculateIou(self, bbox1, bbox2):
 
@@ -59,19 +64,21 @@ class CarDetector:
             if(bBox['updated']):
                 continue
 
-            #calculate iou with every new bBox and get the best one
+            #calculate iou with every new bBox
             ious = []
             for newBbox in newBboxes:
                 ious.append(self.calculateIou(newBbox, bBox['new']['bbox']))
             
-            
+            #replace the current bBox with the new bBox with the best iou
             maxIou = max(ious) if len(ious) > 0 else 0
-            if maxIou > self._trackIouThresh:
+            if maxIou > self._trackingIouThresh:
                 iMaxIou = ious.index(maxIou)
-                bBox['old'] = bBox['new']
-                bBox['new'] = {"bbox": newBboxes[iMaxIou], "id": bBox['old']['id']}
+                if not bBox['old']:
+                    bBox['old'] = {"distance": bBox['new']['distance'], "time": bBox['new']['time']}
+                bBox['new'] = {"bbox": newBboxes[iMaxIou], "time": self._currentTime, "distance": None, "speed": bBox['new']['speed']}
                 bBox['updated'] = True
                 updatedBboxes.append(bBox)
+                #remove from newBboxes list
                 newBboxes.pop(iMaxIou)
         
         self._cars = updatedBboxes
@@ -79,7 +86,7 @@ class CarDetector:
         
         #Add remaining newBboxes
         for newBbox in newBboxes:
-            self._cars.append({"old": None, "new": {"bbox": newBbox, "id": self.nextId()}, "updated": True})
+            self._cars.append({"id": self.nextId(), "old": None, "new": {"bbox": newBbox, "time": self._currentTime, "distance": None, "speed": None}, "updated": True})
 
 
         #show bBoxes
@@ -95,22 +102,22 @@ class CarDetector:
 
 
     #Returns the bboxes of the acceptedClasses found in the frame 
-    def findCars(self, model, frame):
+    def detect(self, model, frame):
         results = model.predict(source=frame, imgsz=(384,672), conf=self._yoloConfThresh, iou=self._yoloIouThresh, verbose=False)
+
+        self._currentTime = time()*1000
 
         newBboxes = []
 
         if results:
             
-            # PROCESS LANES
-            mask = results[-1][0].to(torch.uint8).cpu().numpy()
-            color_mask = np.stack([mask * 0, mask * 255, mask * 0], axis=-1)
-            alpha = 0.5  # transparency factor
-            # Show lanes
+            # PROCESS LANE
+            self._laneMask = results[-1][0].to(torch.uint8).cpu().numpy()
+            
+            # Show lane
             if self._showLanes:
-                frame[np.any(color_mask != [0, 0, 0], axis=-1)] = (
-                    (1 - alpha) * frame[np.any(color_mask != [0, 0, 0], axis=-1)] + 
-                    alpha * color_mask[np.any(color_mask != [0, 0, 0], axis=-1)])
+                frame[self._laneMask==1] = (30, 255, 15)
+                
 
             # PROCESS BBOXES
             for bbox in results[0][0].boxes.data.tolist():
@@ -124,21 +131,19 @@ class CarDetector:
 
                 newBboxes.append(bBox)
 
-        #Update detected cars
+        #Update and show detected cars
         self.updateCars(frame, newBboxes)
+
+        #Update distances
+        self.updateDist(frame.shape)
                      
 
 
-    def updateDist(self, frameDim, bestLinePointsLeft, bestLinePointsRight):
+    def updateDist(self, frameDim):
         
-        distances = []
-
         for car in self._cars:
-            car['new']['distance'] = self.getDistance(frameDim, car['new']['bbox'], bestLinePointsLeft, bestLinePointsRight)
-            if car['new']['distance']:
-                distances.append(car['new'])
+            car['new']['distance'] = self.getDistance(frameDim, car['new']['bbox'])
 
-        return distances
 
 
 
@@ -172,42 +177,17 @@ class CarDetector:
     
 
 
-    def getDistance(self, frameDim, bBox, bestLinePointsLeft, bestLinePointsRight):
-
-        #Get lines data
-        lx1, lx2 = bestLinePointsLeft
-        rx1, rx2 = bestLinePointsRight
-
-        #if some lines data is missing
-        if(not lx1 or not lx2 or not rx1 or not rx2):
-            return None
-
+    def getDistance(self, frameDim, bBox):
 
         imgHeight, imgWidth, _ = frameDim
-        halfImgHeight = int(imgHeight/2)
-
-        #get lines equations (y = mx + b)
-        lm = halfImgHeight/(lx2-lx1) # left
-        lb = -lm * lx1
-        rm = halfImgHeight/(rx2-rx1) # right
-        rb = -rm * rx1
-
-        #flip lines equations (as increasing means going down in the image)
-        lm = -lm
-        lb = -lb + imgHeight
-        rm = -rm
-        rb = -rb + imgHeight
-
-        #get vanishing point coordinates
-        vpx = (rb-lb) / (lm-rm)
-        vpy = lm*vpx + lb
-
-
+        
         x1, y1, x2, y2 = bBox
         
         #coordinates x of the lines at the car's height
-        lx3 = (y2-lb)/lm
-        rx3 = (y2-rb)/rm
+        lx3, rx3 = self.getLinesCoords(int(imgWidth/2), y2, frameDim)
+
+        if not lx3 or not rx3:
+            return None
 
         #if car is in lane
         #if(self.carInlane(x1,x2,y2, lx3, rx3, vpy, vpx, imgHeight)):
@@ -220,3 +200,38 @@ class CarDetector:
         #    return None
 
 
+    #Returns the closest pixel of the mask to both sides of the x,y point at y height in both sides
+    def getLinesCoords(self, x, y, frameDim):
+
+        imgHeight, imgWidth, _ = frameDim
+
+        if y < 0 or y >= imgHeight:
+            return (None, None)
+
+        
+        lx3 = rx3 = None
+
+        #left line
+        lx = x
+        while lx > 0 and lx3 == None:
+            if self._laneMask[y][lx] == 0:
+                lx -= (self._minLineWidth-1)
+            else:
+                while self._laneMask[y][lx] == 1:
+                    lx+=1
+                lx3 = lx + 1
+
+        #right line
+        rx = x
+        while rx < imgWidth and rx3 == None:
+            if self._laneMask[y][rx] == 0:
+                rx += (self._minLineWidth-1)
+            else:
+                while self._laneMask[y][rx] == 1:
+                    rx-=1
+                rx3 = rx - 1
+
+        return (lx3, rx3)
+
+
+                

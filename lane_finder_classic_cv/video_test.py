@@ -65,6 +65,8 @@ serverParameters = {
 #ALGORITHM PARAMETERS
 iouThresh = 0.5
 
+#SPEED MEASURING
+frameTimeThreshold = 500 #ms
 
 #DEBUGGING
 showTimes = True
@@ -108,7 +110,6 @@ while(canProcessVideo(inputVideos, videoSource)):
     ret = True
     iFrame = 0
     lastLFrame = -sys.maxsize #-INF
-    lastYFrame = -sys.maxsize #-INF
     carDetector = CarDetector(iouThresh, camParams, showCars)
 
 
@@ -181,15 +182,25 @@ while(canProcessVideo(inputVideos, videoSource)):
         for car in cars:
             if(car['old']):
                 frameTime = car['new']['time'] - car['old']['time']
-
-                distanceDiff = car['old']['distance'] - car['new']['distance']
                 
-                #get speed in m/ms and convert to km/h
-                carSpeed = (distanceDiff/frameTime) * 3600
-                print(frameTime, distanceDiff, carSpeed)
-                #Display speed next to car
-                x1, y1, x2, y2 = car['new']['bbox']
-                cv2.putText(frame, "Rel Speed: {:6.2f}km/h".format(distanceDiff), (int(x1), int(y1)), cv2.FONT_HERSHEY_PLAIN, fontScale=1, thickness=1, color=(100, 100, 255))
+                if frameTime > frameTimeThreshold:
+                    
+                    distanceDiff = car['new']['distance'] - car['old']['distance']
+                    
+                    #get speed in m/ms and convert to km/h
+                    carSpeed = (distanceDiff/frameTime) * 3600
+
+                    car['new']['speed'] = carSpeed
+
+                    #Update old car
+                    car['old'] = {"distance": car['new']['distance'], "time": car['new']['time']}
+
+                if car['new']['speed']:
+                    #Display speed next to car
+                    x1, y1, x2, y2 = car['new']['bbox']
+                    cv2.putText(frame, "Rel Speed: {:6.2f}km/h".format(car['new']['speed']), (int(x1), int(y1)), cv2.FONT_HERSHEY_PLAIN, fontScale=1, thickness=2, color=(180, 255, 0))
+
+                    
 
 
         #show new frame

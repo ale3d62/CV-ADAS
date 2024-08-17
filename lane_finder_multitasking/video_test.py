@@ -1,9 +1,8 @@
 import cv2
-from car_finder_onnx import CarDetector
+from lane_car_finder import Detector
 from frame_visualizer import FrameVisualizer
 from auxFunctions import *
 from time import time
-import sys
 
 #for screen capture
 import numpy as np
@@ -14,7 +13,7 @@ from ultralytics import YOLO
 
 
 #----------PARAMETERS----------------
-modelName = "v4n_lane_det.onnx"
+modelName = "v4n.onnx"
 modelPath = "../models/"
 
 #Predictions below this confidence value are skipped (range: [0-1])
@@ -30,7 +29,7 @@ showSettings = {
 # - video: test videos at videoPath directory
 # - screen: screen capture
 # - camera: device camera
-videoSource = "video" 
+videoSource = "screen" 
 videoPath = "../test_videos/"
 screenCaptureW = 1920
 screenCaptureH = 1080
@@ -57,8 +56,10 @@ serverParameters = {
 #ALGORITHM PARAMETERS
 yoloConfThresh = 0.3
 yoloIouThresh = 0.5
-trackIouThresh = 0.5
+trackingIouThresh = 0.5
 
+#SPEED MEASURING
+frameTimeThreshold = 500 #ms
 
 #DEBUGGING
 showTimes = True
@@ -88,6 +89,7 @@ while(canProcessVideo(inputVideos, videoSource)):
     #Get input video
     if(videoSource == "video"):
         vid = cv2.VideoCapture(videoPath+'test'+str(inputVideos[0])+'.mp4')
+        vid.set(cv2.CAP_PROP_BUFFERSIZE, 1)
         inputVideos.pop(0)
 
     
@@ -97,10 +99,7 @@ while(canProcessVideo(inputVideos, videoSource)):
     totalTimeLane = 0
     totalFrames = 0
     ret = True
-    iFrame = 0
-    lastLFrame = -sys.maxsize #-INF
-    lastYFrame = -sys.maxsize #-INF
-    carDetector = CarDetector(yoloConfThresh, yoloIouThresh, trackIouThresh, camParams, showSettings)
+    detector = Detector(yoloConfThresh, yoloIouThresh, trackingIouThresh, camParams, showSettings)
 
 
 
@@ -123,7 +122,6 @@ while(canProcessVideo(inputVideos, videoSource)):
 
 
         totalFrames += 1
-        iFrame += 1
 
 
         #Resize to model size
@@ -133,23 +131,40 @@ while(canProcessVideo(inputVideos, videoSource)):
 
         #SCAN FOR CARS AND LINES
         sty = time()
-        carDetector.findCars(model, frame)
+        detector.detect(model, frame)
         totalTimeYolo += (time()-sty)*1000
 
         #If there are no cars, skip to next frame
-        if(carDetector.nCars() == 0):
+        if(detector.nCars() == 0):
             frameVisualizer.showFrame(frame)
             continue
         
 
-        #GET DISTANCE TO CAR
-        """
-        distances = carDetector.updateDist(frame.shape, bestLinePointsLeft, bestLinePointsRight)
-        for distance in distances:
-            d = distance['distance']
-            x1, y1, x2, y2 = distance['bbox']
-            cv2.putText(frame, "Distance: {:6.2f}m".format(d), (int(x1), int(y1)), cv2.FONT_HERSHEY_PLAIN, fontScale=1, thickness=1, color=(100, 100, 255))
-        """
+        #GET CAR SPEED
+        cars = detector.getCars()
+        for car in cars:
+            if(car['old']):
+                frameTime = car['new']['time'] - car['old']['time']
+                
+                if frameTime > frameTimeThreshold:
+                    
+                    if(not car['new']['distance'] or not car['old']['distance']):
+                        break
+
+                    distanceDiff = car['new']['distance'] - car['old']['distance']
+                    
+                    #get speed in m/ms and convert to km/h
+                    carSpeed = (distanceDiff/frameTime) * 3600
+
+                    car['new']['speed'] = carSpeed
+
+                    #Update old car
+                    car['old'] = {"distance": car['new']['distance'], "time": car['new']['time']}
+
+                if car['new']['speed']:
+                    #Display speed next to car
+                    x1, y1, x2, y2 = car['new']['bbox']
+                    cv2.putText(frame, "{:6.2f}km/h".format(car['new']['speed']), (int(x1), int(y1)), cv2.FONT_HERSHEY_PLAIN, fontScale=1, thickness=1, color=(255, 60, 255), lineType=cv2.LINE_AA)
 
         #show new frame
         frameVisualizer.showFrame(frame)
