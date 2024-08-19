@@ -1,19 +1,23 @@
 import json
 import cv2
 from ultralytics import YOLO
-import sys
 from torch import uint8
+from progressBar import printProgress
 
 
-# PROGRESS BAR
-def print_progress(iImg, nImg):
-    bar_length = 40 
-    progress = (iImg + 1) / nImg 
-    block = int(round(bar_length * progress))
-    
-    progress_text = f"\rRunning Benchmark {iImg + 1}/{nImg} [{'#' * block + '-' * (bar_length - block)}] {progress * 100:.1f}%  -  acc:{(segHits/totalSeg)*100:.2f}%"
-    sys.stdout.write(progress_text)
-    sys.stdout.flush()
+#-------------PARAMETERS--------------------------
+DATASET_PATH = 'datasets/lanes/tusimple/train_set/'
+DATASET_JSON_NAME = 'label_data_0531.json'
+MODEL_PATH = '../models/'
+MODEL_NAME = 'v4n_lane_det.onnx'
+CONF_THRESHOLD = 0.3
+IOU_THRESHOLD = 0.5
+MODEL_IMG_SIZE = (384,672)
+PREVIEW_MODE = True
+PREVIEW_TIME = 500 #ms
+#-------------------------------------------------
+
+
 
 
 def getCenterLinesIndex(imgDim, label):
@@ -34,29 +38,22 @@ def getCenterLinesIndex(imgDim, label):
 
 
 
-DATASET_PATH = 'datasets/train_set/'
-DATASET_JSON_NAME = 'label_data_0531.json'
-MODEL_PATH = '../models/'
-MODEL_NAME = 'v4n_lane_det.onnx'
-CONF_THRESHOLD = 0.3
-IOU_THRESHOLD = 0.5
-MODEL_IMG_SIZE = (384,672)
-PREVIEW_MODE = True
 
 #load model
 model = YOLO(MODEL_PATH + MODEL_NAME)
 
 #load labels
+print("Loading labels...")
 labels = [json.loads(line) for line in open(DATASET_PATH + DATASET_JSON_NAME).readlines()]
 
 
 nImg = len(labels)
-totalSeg = 1
-segHits = 1
+
+#Each line is composed of several segments, a hit is when a predicted segment overlaps wit a ground truth segment
+totalSeg = 0
+segHits = 0
 
 for iImg, label in enumerate(labels):
-    
-    print_progress(iImg, nImg)
 
     img = cv2.imread(DATASET_PATH + label['raw_file'])
     imgH, imgW, _ = img.shape
@@ -98,10 +95,13 @@ for iImg, label in enumerate(labels):
 
         if(PREVIEW_MODE):
             cv2.imshow("Image Preview", img)
-            cv2.waitKey(500)
+            cv2.waitKey(PREVIEW_TIME)
 
     except:
         pass
+
+    printProgress(iImg, nImg)
+
 
 print("")
 print(f"Benchmark finished, [{segHits}/{totalSeg}] {(segHits/totalSeg)*100:.2f}%")        
