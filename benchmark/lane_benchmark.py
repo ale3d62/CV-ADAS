@@ -1,6 +1,5 @@
 import json
 import cv2
-from ultralytics import YOLO
 from torch import uint8
 from progressBar import printProgress
 
@@ -10,6 +9,10 @@ DATASET_PATH = 'datasets/lanes/tusimple/train_set/'
 DATASET_JSON_NAME = 'label_data_0531.json'
 MODEL_PATH = '../models/'
 MODEL_NAME = 'v4n_lane_det.onnx'
+#ARCHITECTURE TYPES:
+# - yoloP
+# - multitask
+ARCHITECTURE_TYPE = "multitask"
 CONF_THRESHOLD = 0.3
 IOU_THRESHOLD = 0.5
 MODEL_IMG_SIZE = (384,672)
@@ -40,7 +43,13 @@ def getCenterLinesIndex(imgDim, label):
 
 
 #load model
-model = YOLO(MODEL_PATH + MODEL_NAME)
+if ARCHITECTURE_TYPE == "detection":
+    from ultralytics import YOLO
+    model = YOLO(MODEL_PATH + MODEL_NAME)
+elif ARCHITECTURE_TYPE == "multitask":
+    sys.path.insert(0, './ultralytics_multitask')
+    from ultralytics import YOLO
+    model = YOLO(MODEL_PATH + MODEL_NAME)
 
 #load labels
 print("Loading labels...")

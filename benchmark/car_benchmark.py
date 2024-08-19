@@ -1,33 +1,28 @@
 import json
 import cv2
-from ultralytics import YOLO
 from progressBar import printProgress
-import os.path
+import sys
 
 #-------------PARAMETERS--------------------------
 DATASET_PATH = 'datasets/car/bdd10k/'
 DATASET_JSON_NAME = 'bdd10k_labels_images_train.json'
 MODEL_PATH = '../models/'
-MODEL_NAME = 'yolov8n.pt'
+MODEL_NAME = 'v4n_lane_det.onnx'
+#ARCHITECTURE TYPES:
+# - detection
+# - multitask
+ARCHITECTURE_TYPE = "multitask"
 CONF_THRESHOLD = 0.3
 IOU_THRESHOLD = 0.5
 IOU_COMPARE_THRESHOLD = 0.5
-MODEL_IMG_SIZE = 640
+MODEL_IMG_SIZE = (384, 672)
 PREVIEW_MODE = False
 PREVIEW_TIME = 500 #ms
+#BDD10k DATASET CLASSES
+#pedestrian, rider, car, truck, bus, train, motorcycle
+#bicycle, traffic light, traffic sign
 ACCEPTED_CLASSES = set(["car", "truck", "bus", "motorcycle"])
 ACCEPTED_CLASSES_YOLO = set([2, 3, 4, 6, 7])
-#CLASSES
-#1: pedestrian
-#2: rider
-#3: car
-#4: truck
-#5: bus
-#6: train
-#7: motorcycle
-#8: bicycle
-#9: traffic light
-#10: traffic sign
 #-------------------------------------------------
 
 def calculateIou(bbox1, bbox2):
@@ -49,10 +44,14 @@ def calculateIou(bbox1, bbox2):
 
         return iou
 
-
-
 #load model
-model = YOLO(MODEL_PATH + MODEL_NAME)
+if ARCHITECTURE_TYPE == "detection":
+    from ultralytics import YOLO
+    model = YOLO(MODEL_PATH + MODEL_NAME)
+elif ARCHITECTURE_TYPE == "multitask":
+    sys.path.insert(0, './ultralytics_multitask')
+    from ultralytics import YOLO
+    model = YOLO(MODEL_PATH + MODEL_NAME)
 
 #load labels
 print("Loading labels...")
@@ -62,6 +61,7 @@ nImg = len(labels)
 totalDet = 1
 detHits = 1
 newLabels = []
+
 
 for iImg, label in enumerate(labels):
 
@@ -81,11 +81,26 @@ for iImg, label in enumerate(labels):
     
     #load detected bboxes
     detectedBoxes = []
-    for box in pred[0].boxes.data.tolist():
+    if ARCHITECTURE_TYPE == "detection":
+        for box in pred[0].boxes.data.tolist():
 
-        x1, y1, x2, y2, score, class_id = box
-        
-        if(class_id in ACCEPTED_CLASSES_YOLO):
+            x1, y1, x2, y2, score, class_id = box
+            
+            if(class_id in ACCEPTED_CLASSES_YOLO):
+
+                x1 = int(x1)
+                x2 = int(x2)
+                y1 = int(y1)
+                y2 = int(y2)
+
+                detectedBoxes.append((x1,y1,x2,y2))
+
+    elif ARCHITECTURE_TYPE == "multitask":
+        if not pred[0]:
+            continue
+
+        for bbox in pred[0][0].boxes.data.tolist():
+            x1, y1, x2, y2, score, class_id = bbox
 
             x1 = int(x1)
             x2 = int(x2)
@@ -94,6 +109,7 @@ for iImg, label in enumerate(labels):
 
             detectedBoxes.append((x1,y1,x2,y2))
     
+
     #calculate hits
     for iBox, box in enumerate(realBoxes):
         ious = []
@@ -120,11 +136,13 @@ for iImg, label in enumerate(labels):
         totalDet += 1
         realBoxes.pop(iBox)
 
+
     if(PREVIEW_MODE):
         cv2.imshow("Image Preview", img)
         cv2.waitKey(PREVIEW_TIME)
     
     printProgress(iImg, nImg)
+
 
 
 
