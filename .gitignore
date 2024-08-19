@@ -22,3 +22,6 @@ test_videos/
 *.param
 *.pt
 *.onnx
+
+#Datasets
+datasets/
