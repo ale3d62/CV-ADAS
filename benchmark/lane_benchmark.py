@@ -113,6 +113,8 @@ for iImg, label in enumerate(labels):
 
 
 print("")
-print(f"Benchmark finished, [{segHits}/{totalSeg}] {(segHits/totalSeg)*100:.2f}%")        
+print("Benchmark finished!")
+print(f"Benchmark finished, [{segHits}/{totalSeg}]")   
+print(f"Accuracy: {(segHits/totalSeg)*100:.2f}%") 
     
     

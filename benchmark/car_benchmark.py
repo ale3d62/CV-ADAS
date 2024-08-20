@@ -2,16 +2,18 @@ import json
 import cv2
 from progressBar import printProgress
 import sys
+import numpy as np
 
 #-------------PARAMETERS--------------------------
 DATASET_PATH = 'datasets/car/bdd10k/'
 DATASET_JSON_NAME = 'bdd10k_labels_images_train.json'
 MODEL_PATH = '../models/'
 MODEL_NAME = 'v4n_lane_det.onnx'
-#ARCHITECTURE TYPES:
+#DETECTION METHOD:
 # - detection
 # - multitask
-ARCHITECTURE_TYPE = "multitask"
+# - ref_proyect
+DETECTION_METHOD = "ref_proyect"
 CONF_THRESHOLD = 0.3
 IOU_THRESHOLD = 0.5
 IOU_COMPARE_THRESHOLD = 0.5
@@ -44,29 +46,49 @@ def calculateIou(bbox1, bbox2):
 
         return iou
 
+
+
 #load model
-if ARCHITECTURE_TYPE == "detection":
+if DETECTION_METHOD == "detection":
     from ultralytics import YOLO
     model = YOLO(MODEL_PATH + MODEL_NAME)
-elif ARCHITECTURE_TYPE == "multitask":
+
+elif DETECTION_METHOD == "multitask":
     sys.path.insert(0, './ultralytics_multitask')
     from ultralytics import YOLO
     model = YOLO(MODEL_PATH + MODEL_NAME)
+
+elif DETECTION_METHOD == "ref_proyect":
+    sys.path.insert(0, './reference_proyect/CarND_Vehicle_Detection')
+    from reference_proyect.CarND_Vehicle_Detection.car_finder import *
+
+    with open('reference_proyect/CarND_Vehicle_Detection/classifier.p', 'rb') as f:
+        data = pickle.load(f)
+
+    scaler = data['scaler']
+    cls = data['classifier']
+    window_size = [64, 80, 96, 112, 128, 160]
+    window_roi = [((200, 400),(1080, 550)), ((100, 400),(1180, 550)), ((0, 380),(1280, 550)),((0, 360),(1280, 550)), ((0, 360),(1280, 600)), ((0, 360),(1280, 670)) ]
+    
+    carFinder = CarFinder(64, hist_bins=128, small_size=20, orientations=12, pix_per_cell=8, cell_per_block=1, classifier=cls, scaler=scaler, window_sizes=window_size, window_rois=window_roi)
+
+
 
 #load labels
 print("Loading labels...")
 labels = json.load(open(DATASET_PATH + DATASET_JSON_NAME))
 
-nImg = len(labels)
-totalDet = 1
-detHits = 1
+nImg = 500#len(labels)
+totalDet = 0
+detHits = 0
+falseDet = 0
+missingDet = 0
 newLabels = []
 
 
-for iImg, label in enumerate(labels):
+for iImg, label in enumerate(labels[:500]):
 
     img = cv2.imread(DATASET_PATH+"train/"+label['name'])
-    pred = model.predict(source=img, imgsz=MODEL_IMG_SIZE, conf=CONF_THRESHOLD, iou=IOU_THRESHOLD, verbose=False)
 
     #filter real bboxes
     realBoxes = []
@@ -81,7 +103,9 @@ for iImg, label in enumerate(labels):
     
     #load detected bboxes
     detectedBoxes = []
-    if ARCHITECTURE_TYPE == "detection":
+    if DETECTION_METHOD == "detection":
+        pred = model.predict(source=img, imgsz=MODEL_IMG_SIZE, conf=CONF_THRESHOLD, iou=IOU_THRESHOLD, verbose=False)
+
         for box in pred[0].boxes.data.tolist():
 
             x1, y1, x2, y2, score, class_id = box
@@ -95,7 +119,9 @@ for iImg, label in enumerate(labels):
 
                 detectedBoxes.append((x1,y1,x2,y2))
 
-    elif ARCHITECTURE_TYPE == "multitask":
+    elif DETECTION_METHOD == "multitask":
+        pred = model.predict(source=img, imgsz=MODEL_IMG_SIZE, conf=CONF_THRESHOLD, iou=IOU_THRESHOLD, verbose=False)
+
         if not pred[0]:
             continue
 
@@ -108,6 +134,12 @@ for iImg, label in enumerate(labels):
             y2 = int(y2)
 
             detectedBoxes.append((x1,y1,x2,y2))
+    
+    elif DETECTION_METHOD == "ref_proyect":
+        carFinder.find_cars(img, reset=True)
+
+        for car in carFinder.cars:
+            detectedBoxes.append(car.filtered_bbox.output().astype(np.int32))
     
 
     #calculate hits
@@ -132,7 +164,10 @@ for iImg, label in enumerate(labels):
                 cv2.rectangle(img, (x1, y1), (x2, y2), (0, 0, 255), 1)
             
             detectedBoxes.pop(iMaxIou)
-        
+        else:
+            missingDet += 1
+
+        falseDet += len(detectedBoxes)
         totalDet += 1
         realBoxes.pop(iBox)
 
@@ -146,5 +181,17 @@ for iImg, label in enumerate(labels):
 
 
 
+#Detections
+# +-------------------+--------------------+---------------+
+# |         -         | Didn't Predict Car | Predicted Car |
+# +-------------------+--------------------+---------------+
+# | There were no car | -                  |  falseDet     |
+# | There was a car   | missingDet         |  detHits      |
+# +-------------------+--------------------+---------------+
+
 print("")
-print(f"Benchmark finished, [{detHits}/{totalDet}] {(detHits/totalDet)*100:.2f}%")    
+print("Benchmark finished!")
+print(f"Benchmark finished, [{detHits}/{totalDet}]")   
+print(f"Accuracy: {(detHits/totalDet)*100:.2f}%")   
+print(f"Precission: {detHits/(detHits+missingDet)*100:.2f}%")
+print(f"Recall: {detHits/(detHits+falseDet)*100:.2f}%")
