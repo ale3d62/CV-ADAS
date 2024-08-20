@@ -2,21 +2,26 @@ import json
 import cv2
 from torch import uint8
 from progressBar import printProgress
-
+import sys
+import numpy as np
 
 #-------------PARAMETERS--------------------------
 DATASET_PATH = 'datasets/lanes/tusimple/train_set/'
 DATASET_JSON_NAME = 'label_data_0531.json'
 MODEL_PATH = '../models/'
 MODEL_NAME = 'v4n_lane_det.onnx'
-#ARCHITECTURE TYPES:
-# - yoloP
+#DETECTION METHOD:
 # - multitask
-ARCHITECTURE_TYPE = "multitask"
+# - classic_cv
+DETECTION_METHOD = "classic_cv"
+#Limit number of images
+#set it to 0 to use all the images
+NIMAGES = 0
+CLASSIC_CV_LINE_WIDTH = 8 #px
 CONF_THRESHOLD = 0.3
 IOU_THRESHOLD = 0.5
 MODEL_IMG_SIZE = (384,672)
-PREVIEW_MODE = True
+PREVIEW_MODE = False
 PREVIEW_TIME = 500 #ms
 #-------------------------------------------------
 
@@ -39,39 +44,76 @@ def getCenterLinesIndex(imgDim, label):
 
     return iLeftLine, iRightLine
 
+# Given linepoints = (x1,x2), where (x1, imgH) and (x2, int(imgH/2)) are 
+# in the same line, return the point that belongs to that line at height y
+def getLinePoint(linePoints, y, imgDim):
+    imgW, imgH, _ = imgDim
+    halfImgHeight = int(imgH/2)
+
+    x1,x2 = linePoints
+
+    #get line equation (y = mx + b)
+    m = halfImgHeight/(x2-x1)
+    b = -m * x1
+
+    #flip line equation (as increasing means going down in the image)
+    m = -m
+    b = -b + imgH
+
+    return int(y-b / m)
 
 
 
 #load model
-if ARCHITECTURE_TYPE == "detection":
+if DETECTION_METHOD == "detection":
     from ultralytics import YOLO
     model = YOLO(MODEL_PATH + MODEL_NAME)
-elif ARCHITECTURE_TYPE == "multitask":
+elif DETECTION_METHOD == "multitask":
     sys.path.insert(0, './ultralytics_multitask')
     from ultralytics import YOLO
     model = YOLO(MODEL_PATH + MODEL_NAME)
+elif DETECTION_METHOD == "classic_cv":
+    sys.path.insert(0, '../lane_finder_classic_cv')
+    from lane_finder import *
+
+
 
 #load labels
 print("Loading labels...")
 labels = [json.loads(line) for line in open(DATASET_PATH + DATASET_JSON_NAME).readlines()]
 
 
-nImg = len(labels)
+nImg = len(labels) if NIMAGES == 0 else NIMAGES
 
 #Each line is composed of several segments, a hit is when a predicted segment overlaps wit a ground truth segment
 totalSeg = 0
 segHits = 0
 
-for iImg, label in enumerate(labels):
+for iImg, label in enumerate(labels[:nImg]):
 
     img = cv2.imread(DATASET_PATH + label['raw_file'])
     imgH, imgW, _ = img.shape
 
-    pred = model.predict(source=img, imgsz=MODEL_IMG_SIZE, conf=CONF_THRESHOLD, iou=IOU_THRESHOLD, verbose=False)
-    pred_mask = pred[-1][0].to(uint8).cpu().numpy()
+    if DETECTION_METHOD == "multitask":
+        pred = model.predict(source=img, imgsz=MODEL_IMG_SIZE, conf=CONF_THRESHOLD, iou=IOU_THRESHOLD, verbose=False)
+        pred_mask = pred[-1][0].to(uint8).cpu().numpy()
+
+    elif DETECTION_METHOD == "classic_cv":
+        _, bestLinePointsLeft, bestLinePointsRight, _ = findLane(img, None, None, False)
+        pred_mask = np.zeros(img.shape, dtype=np.uint8)
+        if(bestLinePointsLeft):
+            lx3 = getLinePoint(bestLinePointsLeft, 0, img.shape)
+            cv2.line(pred_mask, (bestLinePointsLeft[0], imgH), (lx3, 0), color=255, thickness=CLASSIC_CV_LINE_WIDTH)
+        if(bestLinePointsRight):
+            rx3 = getLinePoint(bestLinePointsRight, 0, img.shape)
+            cv2.line(pred_mask, (bestLinePointsRight[0], imgH), (rx3, 0), color=255, thickness=CLASSIC_CV_LINE_WIDTH)
+        pred_mask = cv2.cvtColor(pred_mask, cv2.COLOR_BGR2GRAY)
+
 
     if(PREVIEW_MODE):
-        img[pred_mask==1] = (30, 255, 15)
+        if(np.any(pred_mask)):
+            mask_bool = pred_mask != 0
+            img[mask_bool] = np.array([30, 255, 15], dtype=np.uint8)
     
     try:
         #get index of center lanes

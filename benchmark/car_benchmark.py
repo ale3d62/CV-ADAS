@@ -8,12 +8,15 @@ import numpy as np
 DATASET_PATH = 'datasets/car/bdd10k/'
 DATASET_JSON_NAME = 'bdd10k_labels_images_train.json'
 MODEL_PATH = '../models/'
-MODEL_NAME = 'v4n_lane_det.onnx'
+MODEL_NAME = 'yolopv2.onnx'
 #DETECTION METHOD:
 # - detection
 # - multitask
 # - ref_proyect
-DETECTION_METHOD = "ref_proyect"
+DETECTION_METHOD = "detection"
+#Limit number of images
+#set it to 0 to use all the images
+NIMAGES = 0
 CONF_THRESHOLD = 0.3
 IOU_THRESHOLD = 0.5
 IOU_COMPARE_THRESHOLD = 0.5
@@ -78,7 +81,7 @@ elif DETECTION_METHOD == "ref_proyect":
 print("Loading labels...")
 labels = json.load(open(DATASET_PATH + DATASET_JSON_NAME))
 
-nImg = 500#len(labels)
+nImg = len(labels) if NIMAGES == 0 else NIMAGES
 totalDet = 0
 detHits = 0
 falseDet = 0
@@ -86,7 +89,7 @@ missingDet = 0
 newLabels = []
 
 
-for iImg, label in enumerate(labels[:500]):
+for iImg, label in enumerate(labels[:nImg]):
 
     img = cv2.imread(DATASET_PATH+"train/"+label['name'])
 
