@@ -1,3 +1,6 @@
 [submodule "benchmark/benchmark/reference_proyect/CarND_Vehicle_Detection"]
 	path = benchmark/benchmark/reference_proyect/CarND_Vehicle_Detection
 	url = https://github.com/ajsmilutin/CarND-Vehicle-Detection.git
+[submodule "benchmark/reference_proyect/CarND_Vehicle_Detection"]
+	path = benchmark/reference_proyect/CarND_Vehicle_Detection
+	url = https://github.com/ajsmilutin/CarND-Vehicle-Detection.git
