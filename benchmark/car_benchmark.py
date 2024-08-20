@@ -3,24 +3,25 @@ import cv2
 from progressBar import printProgress
 import sys
 import numpy as np
+from time import time
 
 #-------------PARAMETERS--------------------------
 DATASET_PATH = 'datasets/car/bdd10k/'
 DATASET_JSON_NAME = 'bdd10k_labels_images_train.json'
 MODEL_PATH = '../models/'
-MODEL_NAME = 'yolopv2.onnx'
+MODEL_NAME = 'yolov8n.pt'
 #DETECTION METHOD:
 # - detection
 # - multitask
 # - ref_proyect
 DETECTION_METHOD = "detection"
-#Limit number of images
+#Limit the number of images
 #set it to 0 to use all the images
 NIMAGES = 0
 CONF_THRESHOLD = 0.3
 IOU_THRESHOLD = 0.5
-IOU_COMPARE_THRESHOLD = 0.5
-MODEL_IMG_SIZE = (384, 672)
+IOU_COMPARE_THRESHOLD = 0.6
+MODEL_IMG_SIZE = 640
 PREVIEW_MODE = False
 PREVIEW_TIME = 500 #ms
 #BDD10k DATASET CLASSES
@@ -87,7 +88,7 @@ detHits = 0
 falseDet = 0
 missingDet = 0
 newLabels = []
-
+st = time()
 
 for iImg, label in enumerate(labels[:nImg]):
 
@@ -144,7 +145,6 @@ for iImg, label in enumerate(labels[:nImg]):
         for car in carFinder.cars:
             detectedBoxes.append(car.filtered_bbox.output().astype(np.int32))
     
-
     #calculate hits
     for iBox, box in enumerate(realBoxes):
         ious = []
@@ -164,23 +164,27 @@ for iImg, label in enumerate(labels[:nImg]):
 
             if PREVIEW_MODE:
                 x1, y1, x2, y2 = detectedBoxes[iMaxIou]
-                cv2.rectangle(img, (x1, y1), (x2, y2), (0, 0, 255), 1)
+                cv2.rectangle(img, (x1, y1), (x2, y2), (255, 0, 0), 1)
             
             detectedBoxes.pop(iMaxIou)
         else:
             missingDet += 1
 
-        falseDet += len(detectedBoxes)
         totalDet += 1
-        realBoxes.pop(iBox)
+    
+    falseDet += len(detectedBoxes)
 
 
     if(PREVIEW_MODE):
+        for detectedBox in detectedBoxes:
+            x1, y1, x2, y2 = detectedBox
+            cv2.rectangle(img, (x1, y1), (x2, y2), (0, 0, 255), 1)
         cv2.imshow("Image Preview", img)
         cv2.waitKey(PREVIEW_TIME)
     
     printProgress(iImg, nImg)
 
+totalTime = (time()-st)*1000
 
 
 
@@ -192,9 +196,9 @@ for iImg, label in enumerate(labels[:nImg]):
 # | There was a car   | missingDet         |  detHits      |
 # +-------------------+--------------------+---------------+
 
-print("")
-print("Benchmark finished!")
-print(f"Benchmark finished, [{detHits}/{totalDet}]")   
-print(f"Accuracy: {(detHits/totalDet)*100:.2f}%")   
-print(f"Precission: {detHits/(detHits+missingDet)*100:.2f}%")
-print(f"Recall: {detHits/(detHits+falseDet)*100:.2f}%")
+if(totalDet > 0 and detHits+falseDet):
+    print("")
+    print("Benchmark finished!")
+    print(f"Accuracy: {(detHits/totalDet)*100:.2f}% [{detHits}/{totalDet}]")   
+    print(f"Recall: {detHits/(detHits+falseDet)*100:.2f}%")
+    print(f"Time: Avg: {totalTime/nImg:.2f}ms --- Total: {totalTime/1000:.2f}sec")
