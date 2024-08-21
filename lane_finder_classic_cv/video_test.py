@@ -164,9 +164,10 @@ while(canProcessVideo(inputVideos, videoSource)):
         totalTimeYolo += (time()-sty)*1000
 
         #If there are no cars, skip to next frame
-        if(carDetector.nCars() == 0):
-            frameVisualizer.showFrame(frame)
-            continue
+        if enableOptimizations:
+            if(carDetector.nCars() == 0):
+                frameVisualizer.showFrame(frame)
+                continue
         
 
         #GET DISTANCE TO CAR

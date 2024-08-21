@@ -4,16 +4,17 @@ from torch import uint8
 from progressBar import printProgress
 import sys
 import numpy as np
+from time import time
 
 #-------------PARAMETERS--------------------------
 DATASET_PATH = 'datasets/lanes/tusimple/train_set/'
-DATASET_JSON_NAME = 'label_data_0531.json'
+DATASET_JSON_NAME = 'label_data_0313.json'
 MODEL_PATH = '../models/'
-MODEL_NAME = 'v4n_lane_det.onnx'
+MODEL_NAME = 'v4n.pt'
 #DETECTION METHOD:
 # - multitask
 # - classic_cv
-DETECTION_METHOD = "classic_cv"
+DETECTION_METHOD = "multitask"
 #Limit number of images
 #set it to 0 to use all the images
 NIMAGES = 0
@@ -88,6 +89,8 @@ nImg = len(labels) if NIMAGES == 0 else NIMAGES
 #Each line is composed of several segments, a hit is when a predicted segment overlaps wit a ground truth segment
 totalSeg = 0
 segHits = 0
+st = time()
+
 
 for iImg, label in enumerate(labels[:nImg]):
 
@@ -153,10 +156,12 @@ for iImg, label in enumerate(labels[:nImg]):
 
     printProgress(iImg, nImg)
 
+totalTime = (time()-st)*1000
 
-print("")
-print("Benchmark finished!")
-print(f"Benchmark finished, [{segHits}/{totalSeg}]")   
-print(f"Accuracy: {(segHits/totalSeg)*100:.2f}%") 
-    
+
+if(totalSeg > 0 and nImg > 0):
+    print("")
+    print("Benchmark finished!")
+    print(f"Accuracy: {(segHits/totalSeg)*100:.2f}% [{segHits}/{totalSeg}]") 
+    print(f"Time: Avg: {totalTime/nImg:.2f}ms --- Total: {totalTime/1000:.2f}sec")
     
