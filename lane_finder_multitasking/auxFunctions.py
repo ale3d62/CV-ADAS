@@ -6,3 +6,6 @@ def canProcessVideo(inputVideos, videoSource):
         return len(inputVideos) > 0
     else:
         return False
+    
+def alert():
+    print("VEHICLE TOO CLOSE")

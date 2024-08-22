@@ -10,7 +10,7 @@ from time import time
 DATASET_PATH = 'datasets/lanes/tusimple/train_set/'
 DATASET_JSON_NAME = 'label_data_0313.json'
 MODEL_PATH = '../models/'
-MODEL_NAME = 'v4n.pt'
+MODEL_NAME = 'yolopv2.onnx'
 #DETECTION METHOD:
 # - multitask
 # - classic_cv

@@ -6,22 +6,22 @@ import numpy as np
 from time import time
 
 #-------------PARAMETERS--------------------------
-DATASET_PATH = 'datasets/car/bdd10k/'
+DATASET_PATH = 'datasets/car/bdd100k/'
 DATASET_JSON_NAME = 'bdd100k_labels_images_val.json'
 MODEL_PATH = '../models/'
-MODEL_NAME = 'v4n_lane_det.onnx'
+MODEL_NAME = 'yolov8n_openvino_model'
 #DETECTION METHOD:
 # - detection
 # - multitask
 # - ref_proyect
-DETECTION_METHOD = "multitask"
+DETECTION_METHOD = "detection"
 #Limit the number of images
 #set it to 0 to use all the images
 NIMAGES = 0
 CONF_THRESHOLD = 0.3
 IOU_THRESHOLD = 0.5
 IOU_COMPARE_THRESHOLD = 0.6
-MODEL_IMG_SIZE = (384,672)
+MODEL_IMG_SIZE = 640
 PREVIEW_MODE = False
 PREVIEW_TIME = 500 #ms
 #BDD10k DATASET CLASSES

@@ -13,7 +13,12 @@ from ultralytics import YOLO
 
 
 #----------PARAMETERS----------------
-modelName = "v4n.onnx"
+#Security distance estimation
+userVehicleDeceleration = 9
+otherVehiclesDeceleration = 11
+reactionTime = 0.5
+
+modelName = "v4n_lane_det.onnx"
 modelPath = "../models/"
 
 #Predictions below this confidence value are skipped (range: [0-1])
@@ -161,10 +166,19 @@ while(canProcessVideo(inputVideos, videoSource)):
                     #Update old car
                     car['old'] = {"distance": car['new']['distance'], "time": car['new']['time']}
 
+                    #Get security distance
+                    relVel = car['new']['speed']
+                    secDist = relVel*reactionTime + pow(reactionTime, 2)/(2*(userVehicleDeceleration - otherVehiclesDeceleration))
+
+                    if(secDist <= car['new']['distance']):
+                        alert()
+
                 if car['new']['speed']:
                     #Display speed next to car
                     x1, y1, x2, y2 = car['new']['bbox']
                     cv2.putText(frame, "{:6.2f}km/h".format(car['new']['speed']), (int(x1), int(y1)), cv2.FONT_HERSHEY_PLAIN, fontScale=1, thickness=1, color=(255, 60, 255), lineType=cv2.LINE_AA)
+
+
 
         #show new frame
         frameVisualizer.showFrame(frame)

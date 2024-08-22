@@ -57,3 +57,8 @@ def getBestLine(linePoints, threshold, k, rec):
             return getBestLine([linePointsBottom[mask].tolist(), linePointsTop[mask].tolist()], threshold, max(5, len(mask)-mask.sum()), True)
     else:
         return [None, None]    
+    
+
+
+def alert():
+    print("VEHICLE TOO CLOSE")
