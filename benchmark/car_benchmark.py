@@ -17,14 +17,15 @@ MODEL_NAME = 'yolopv2.pt'
 # - detection
 # - multitask
 # - ref_proyect
+# - yolopv2
 DETECTION_METHOD = "yolopv2"
 #Limit the number of images
 #set it to 0 to use all the images
-NIMAGES = 0
+NIMAGES = 500
 CONF_THRESHOLD = 0.3
 IOU_THRESHOLD = 0.5
 IOU_COMPARE_THRESHOLD = 0.6
-MODEL_IMG_SIZE = 640
+MODEL_IMG_SIZE = (384, 672)
 PREVIEW_MODE = False
 PREVIEW_TIME = 500 #ms
 #BDD10k DATASET CLASSES
@@ -80,6 +81,9 @@ elif DETECTION_METHOD == "ref_proyect":
     carFinder = CarFinder(64, hist_bins=128, small_size=20, orientations=12, pix_per_cell=8, cell_per_block=1, classifier=cls, scaler=scaler, window_sizes=window_size, window_rois=window_roi)
 
 elif DETECTION_METHOD == "yolopv2":
+    if(MODEL_IMG_SIZE != (384, 640)):
+        raise Exception("MODEL_IMG_SIZE has to be 384x672")
+    
     model = torch.jit.load(MODEL_PATH + MODEL_NAME)
     os.environ['CUDA_VISIBLE_DEVICES'] = '-1'  # force torch.cuda.is_available() = False
     device = torch.device("cpu")
@@ -152,9 +156,22 @@ for iImg, label in enumerate(labels[:nImg]):
             detectedBoxes.append(car.filtered_bbox.output().astype(np.int32))
     
     elif DETECTION_METHOD == "yolopv2":
-        pred = detect(img, model, device)
-        print(pred)
-        continue
+        preds, _ = detect(img, model, device, imgsz=MODEL_IMG_SIZE)
+        preds = preds[0]
+
+        imgH, imgW, _ = img.shape
+
+        for pred in preds:
+            x1, y1, x2, y2, score, class_id = pred
+
+            x1 = int(x1 * (imgW/MODEL_IMG_SIZE[1]))
+            y1 = int(y1 * (imgH/MODEL_IMG_SIZE[0]))
+            x2 = int(x2 * (imgW/MODEL_IMG_SIZE[1]))
+            y2 = int(y2 * (imgH/MODEL_IMG_SIZE[0]))
+
+            cv2.rectangle(img, (x1, y1), (x2, y2), (0, 255, 0), 1)
+            detectedBoxes.append((x1,y1,x2,y2))
+
     #calculate hits
     for iBox, box in enumerate(realBoxes):
         ious = []

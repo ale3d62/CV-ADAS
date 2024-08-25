@@ -1,20 +1,24 @@
 import json
 import cv2
-from torch import uint8
+import torch
 from progressBar import printProgress
 import sys
 import numpy as np
 from time import time
+import os
+from yolopv2 import detect
+
 
 #-------------PARAMETERS--------------------------
 DATASET_PATH = 'datasets/lanes/tusimple/train_set/'
 DATASET_JSON_NAME = 'label_data_0313.json'
 MODEL_PATH = '../models/'
-MODEL_NAME = 'yolopv2.onnx'
+MODEL_NAME = 'yolopv2.pt'
 #DETECTION METHOD:
 # - multitask
 # - classic_cv
-DETECTION_METHOD = "multitask"
+# - yolopv2
+DETECTION_METHOD = "yolopv2"
 #Limit number of images
 #set it to 0 to use all the images
 NIMAGES = 0
@@ -76,7 +80,12 @@ elif DETECTION_METHOD == "multitask":
 elif DETECTION_METHOD == "classic_cv":
     sys.path.insert(0, '../lane_finder_classic_cv')
     from lane_finder import *
-
+elif DETECTION_METHOD == "yolopv2":
+    if(MODEL_IMG_SIZE != (384, 672)):
+        raise Exception("MODEL_IMG_SIZE has to be 384x672")
+    model = torch.jit.load(MODEL_PATH + MODEL_NAME)
+    os.environ['CUDA_VISIBLE_DEVICES'] = '-1'  # force torch.cuda.is_available() = False
+    device = torch.device("cpu")
 
 
 #load labels
@@ -99,11 +108,11 @@ for iImg, label in enumerate(labels[:nImg]):
 
     if DETECTION_METHOD == "multitask":
         pred = model.predict(source=img, imgsz=MODEL_IMG_SIZE, conf=CONF_THRESHOLD, iou=IOU_THRESHOLD, verbose=False)
-        pred_mask = pred[-1][0].to(uint8).cpu().numpy()
+        pred_mask = pred[-1][0].to(torch.uint8).cpu().numpy()
 
     elif DETECTION_METHOD == "classic_cv":
         _, bestLinePointsLeft, bestLinePointsRight, _ = findLane(img, None, None, False)
-        pred_mask = np.zeros(img.shape, dtype=np.uint8)
+        pred_mask = np.zeros(img.shape, dtype=np.torch.uint8)
         if(bestLinePointsLeft):
             lx3 = getLinePoint(bestLinePointsLeft, 0, img.shape)
             cv2.line(pred_mask, (bestLinePointsLeft[0], imgH), (lx3, 0), color=255, thickness=CLASSIC_CV_LINE_WIDTH)
@@ -111,6 +120,9 @@ for iImg, label in enumerate(labels[:nImg]):
             rx3 = getLinePoint(bestLinePointsRight, 0, img.shape)
             cv2.line(pred_mask, (bestLinePointsRight[0], imgH), (rx3, 0), color=255, thickness=CLASSIC_CV_LINE_WIDTH)
         pred_mask = cv2.cvtColor(pred_mask, cv2.COLOR_BGR2GRAY)
+    
+    elif DETECTION_METHOD == "yolopv2":
+        _, pred_mask = detect(img, model, device, imgsz=MODEL_IMG_SIZE)
 
 
     if(PREVIEW_MODE):

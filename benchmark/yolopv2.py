@@ -1,23 +1,15 @@
 
 import torch
+from utils import *
 
 
 def detect(img, model, device, imgsz=640):
-    # setting and directories
-    source,   = opt.source
-    save_img = False
-    save_txt = False
-
-    #save_dir = Path(increment_path(Path(opt.project) / opt.name, exist_ok=opt.exist_ok))  # increment run
-    #(save_dir / 'labels' if save_txt else save_dir).mkdir(parents=True, exist_ok=True)  # make dir
-
-    inf_time = AverageMeter()
-    waste_time = AverageMeter()
-    nms_time = AverageMeter()
+    #inf_time = AverageMeter()
+    #waste_time = AverageMeter()
+    #nms_time = AverageMeter()
 
     # Load model
     stride =32
-    #model  = torch.jit.load(modelPath)
 
     half = device.type != 'cpu'  # half precision only supported on CUDA
     model = model.to(device)
@@ -27,40 +19,51 @@ def detect(img, model, device, imgsz=640):
     model.eval()
 
     # Set Dataloader
-    vid_path, vid_writer = None, None
-    dataset = LoadImages(source, img_size=imgsz, stride=stride)
+    #dataset = LoadImages(source, img_size=imgsz, stride=stride)
 
     # Run inference
     if device.type != 'cpu':
         model(torch.zeros(1, 3, imgsz, imgsz).to(device).type_as(next(model.parameters())))  # run once
-    t0 = time.time()
+    #t0 = time.time()
     #for path, img, im0s, vid_cap in dataset:
+    
+
+
+    #img = cv2.resize(img, (1280,720), interpolation=cv2.INTER_LINEAR)
+    img = letterbox(img)[0]
+    img = img[:, :, ::-1].transpose(2, 0, 1)  # BGR to RGB, to 3x416x416
+    img = np.ascontiguousarray(img)
+
+
+
     img = torch.from_numpy(img).to(device)
     img = img.half() if half else img.float()  # uint8 to fp16/32
     img /= 255.0  # 0 - 255 to 0.0 - 1.0
 
     if img.ndimension() == 3:
         img = img.unsqueeze(0)
-
+    #img = img.permute(0, 3, 1, 2)
     # Inference
-    t1 = time_synchronized()
+    #t1 = time_synchronized()
+
     [pred,anchor_grid],seg,ll= model(img)
-    t2 = time_synchronized()
+    #t2 = time_synchronized()
 
     # waste time: the incompatibility of  torch.jit.trace causes extra time consumption in demo version 
     # but this problem will not appear in offical version 
-    tw1 = time_synchronized()
+    #tw1 = time_synchronized()
     pred = split_for_trace_model(pred,anchor_grid)
-    tw2 = time_synchronized()
+    #tw2 = time_synchronized()
 
     # Apply NMS
-    t3 = time_synchronized()
-    pred = non_max_suppression(pred, opt.conf_thres, opt.iou_thres, classes=opt.classes, agnostic=opt.agnostic_nms)
-    t4 = time_synchronized()
+    #t3 = time_synchronized()
+    pred = non_max_suppression(pred)
+    #t4 = time_synchronized()
 
-    da_seg_mask = driving_area_mask(seg)
+    #da_seg_mask = driving_area_mask(seg)
     ll_seg_mask = lane_line_mask(ll)
-    return pred
+
+    return (pred, ll_seg_mask)
     # Process detections
     for i, det in enumerate(pred):  # detections per image
         
