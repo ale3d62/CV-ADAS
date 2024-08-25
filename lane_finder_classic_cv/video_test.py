@@ -16,39 +16,36 @@ from ultralytics import YOLO
 
 
 #----------PARAMETERS-----------------------------------------------
-#Security distance estimation
-userVehicleDeceleration = 9 #m/s^2
-otherVehiclesDeceleration = 11 #m/s^2
-reactionTime = 0.5 #sec
-vehicleBonnetSize = 1.5 #m
-
-#Detection model
-modelName = "yolov8n.pt"
-modelPath = "../models/" 
-
-#Predictions below this confidence value are skipped (range: [0-1])
-yoloConfidenceThreshold = 0.2 
-
-#Indexes of the only yolo object classes to consider
-acceptedClasses = set([2, 3, 4, 6, 7])
-showLines = True
-showCars = True
-
-#To scale the video down and make it faster
-# number in the range (0-1]
-resScaling = 0.5
-
 #Source of the image to process
 # - video: test videos at videoPath directory
 # - screen: screen capture
 # - camera: device camera
 videoSource = "screen" 
 videoPath = "../test_videos/"
+inputVideos = [*range(8,27) + ".mp4"] 
 screenCaptureW = 1920
 screenCaptureH = 1080
 
+#Detection model
+modelName = "yolov8n.pt"
+modelPath = "../models/" 
+
+#ALGORITHM PARAMETERS
+yoloConfThresh = 0.3
+yoloIouThresh = 0.5
+trackingIouThresh = 0.5
+
+#Indexes of the only yolo object classes to consider
+acceptedClasses = set([2, 3, 4, 6, 7])
+
+#To scale the video down and make it faster
+# number in the range (0-1]
+resScaling = 0.5
+
+enableOptimizations = True
+
 #Maximum number of frames without updating lane
-maxLAge = 1000
+maxLAge = 10
 
 #CAMERA PARAMETERS
 cameraId = 0
@@ -57,6 +54,15 @@ camParams = {
     "sensorPixelW": 0.008,
     "roadWidth": 3600
 }
+
+#SPEED MEASURING
+frameTimeThreshold = 500 #ms
+
+#Security distance estimation
+userVehicleDeceleration = 9 #m/s^2
+otherVehiclesDeceleration = 11 #m/s^2
+reactionTime = 0.5 #sec
+vehicleBonnetSize = 1.5 #m
 
 #VISUALIZATION
 # - none: no visualization
@@ -69,15 +75,11 @@ serverParameters = {
     "port": 5000
 }
 
-#ALGORITHM PARAMETERS
-iouThresh = 0.5
-
-#SPEED MEASURING
-frameTimeThreshold = 500 #ms
+showLines = True
+showCars = True
 
 #DEBUGGING
 showTimes = True
-enableOptimizations = True
 #-------------------------------------------------------------
 
 
@@ -91,9 +93,6 @@ frameVisualizer = FrameVisualizer(visualizationMode, serverParameters)
 bounding_box = {'top': 0, 'left': 0, 'width': screenCaptureW, 'height': screenCaptureH}
 sct = mss()
 
-#indexes of the videos to use as input
-inputVideos = [*range(8,27)] 
-
 if(videoSource == "camera"):
     vid = cv2.VideoCapture(cameraId)
 
@@ -103,7 +102,7 @@ while(canProcessVideo(inputVideos, videoSource)):
     
     #Get input video
     if(videoSource == "video"):
-        vid = cv2.VideoCapture(videoPath+'test'+str(inputVideos[0])+'.mp4')
+        vid = cv2.VideoCapture(videoPath+inputVideos[0])
         inputVideos.pop(0)
 
     
@@ -117,7 +116,7 @@ while(canProcessVideo(inputVideos, videoSource)):
     ret = True
     iFrame = 0
     lastLFrame = -sys.maxsize #-INF
-    carDetector = CarDetector(iouThresh, camParams, showCars)
+    carDetector = CarDetector(yoloConfThresh, yoloIouThresh, trackingIouThresh, camParams, showCars)
 
 
 

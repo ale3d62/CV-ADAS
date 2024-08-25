@@ -2,8 +2,10 @@ import cv2
 from time import time
 class CarDetector:
 
-    def __init__(self, trackingIouThresh, camParams, showCars):
+    def __init__(self,yoloConfThresh, yoloIouThresh, trackingIouThresh, camParams, showCars):
         self._cars = []
+        self._yoloConfThresh = yoloConfThresh
+        self._yoloIouThresh = yoloIouThresh
         self._trackingIouThresh = trackingIouThresh
         self._id = 0
         self._f = camParams["f"]
@@ -98,7 +100,7 @@ class CarDetector:
 
     #Returns the bboxes of the acceptedClasses found in the frame 
     def findCars(self, model, frame, acceptedClasses):
-        results = model(frame, verbose=False, conf=0.2)[0]
+        results = model(frame, verbose=False, conf=self._yoloConfThresh, iou=self._yoloIouThresh)[0]
 
         self._currentTime = time()*1000
 

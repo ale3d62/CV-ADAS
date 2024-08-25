@@ -13,32 +13,30 @@ from ultralytics import YOLO
 
 
 #----------PARAMETERS----------------
-#Security distance estimation
-userVehicleDeceleration = 9 #m/s^2
-otherVehiclesDeceleration = 11 #m/s^2
-reactionTime = 0.5 #sec
-vehicleBonnetSize = 1.5 #m
-
-modelName = "v4n_lane_det.onnx"
-modelPath = "../models/"
-
-#Predictions below this confidence value are skipped (range: [0-1])
-yoloConfidenceThreshold = 0.2 
-
-#Select the predictions to show
-showSettings = {
-    "cars": True,
-    "lanes": True
-}
-
 #Source of the image to process
 # - video: test videos at videoPath directory
 # - screen: screen capture
 # - camera: device camera
 videoSource = "screen" 
 videoPath = "../test_videos/"
+inputVideos = [f"test{i}.mp4" for i in range(8,27)] 
 screenCaptureW = 1920
 screenCaptureH = 1080
+
+#Detection model
+modelName = "v4n_lane_det.onnx"
+modelPath = "../models/"
+
+#ALGORITHM PARAMETERS
+yoloConfThresh = 0.3
+yoloIouThresh = 0.5
+trackingIouThresh = 0.5
+
+#Select the predictions to show
+showSettings = {
+    "cars": True,
+    "lanes": True
+}
 
 #CAMERA PARAMETERS
 cameraId = 0
@@ -47,6 +45,15 @@ camParams = {
     "sensorPixelW": 0.008,
     "roadWidth": 3600
 }
+
+#SPEED MEASURING
+frameTimeThreshold = 500 #ms
+
+#Security distance estimation
+userVehicleDeceleration = 9 #m/s^2
+otherVehiclesDeceleration = 11 #m/s^2
+reactionTime = 0.5 #sec
+vehicleBonnetSize = 1.5 #m
 
 #VISUALIZATION
 # - none: no visualization
@@ -58,14 +65,6 @@ serverParameters = {
     "ip": "0.0.0.0",
     "port": 5000
 }
-
-#ALGORITHM PARAMETERS
-yoloConfThresh = 0.3
-yoloIouThresh = 0.5
-trackingIouThresh = 0.5
-
-#SPEED MEASURING
-frameTimeThreshold = 500 #ms
 
 #DEBUGGING
 showTimes = True
@@ -82,8 +81,6 @@ frameVisualizer = FrameVisualizer(visualizationMode, serverParameters)
 bounding_box = {'top': 0, 'left': 0, 'width': screenCaptureW, 'height': screenCaptureH}
 sct = mss()
 
-#indexes of the videos to use as input
-inputVideos = [*range(8,27)] 
 
 if(videoSource == "camera"):
     vid = cv2.VideoCapture(cameraId)
@@ -94,7 +91,7 @@ while(canProcessVideo(inputVideos, videoSource)):
     
     #Get input video
     if(videoSource == "video"):
-        vid = cv2.VideoCapture(videoPath+'test'+str(inputVideos[0])+'.mp4')
+        vid = cv2.VideoCapture(videoPath+inputVideos[0])
         vid.set(cv2.CAP_PROP_BUFFERSIZE, 1)
         inputVideos.pop(0)
 
