@@ -17,9 +17,10 @@ from ultralytics import YOLO
 
 #----------PARAMETERS-----------------------------------------------
 #Security distance estimation
-userVehicleDeceleration = 9
-otherVehiclesDeceleration = 11
-reactionTime = 0.5
+userVehicleDeceleration = 9 #m/s^2
+otherVehiclesDeceleration = 11 #m/s^2
+reactionTime = 0.5 #sec
+vehicleBonnetSize = 1.5 #m
 
 #Detection model
 modelName = "yolov8n.pt"
@@ -206,7 +207,7 @@ while(canProcessVideo(inputVideos, videoSource)):
                     relVel = car['new']['speed']
                     secDist = relVel*reactionTime + pow(reactionTime, 2)/(2*(userVehicleDeceleration - otherVehiclesDeceleration))
 
-                    if(secDist <= car['new']['distance']):
+                    if(secDist <= car['new']['distance'] - vehicleBonnetSize):
                         alert()
 
                 if car['new']['speed']:

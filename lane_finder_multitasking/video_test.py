@@ -14,9 +14,10 @@ from ultralytics import YOLO
 
 #----------PARAMETERS----------------
 #Security distance estimation
-userVehicleDeceleration = 9
-otherVehiclesDeceleration = 11
-reactionTime = 0.5
+userVehicleDeceleration = 9 #m/s^2
+otherVehiclesDeceleration = 11 #m/s^2
+reactionTime = 0.5 #sec
+vehicleBonnetSize = 1.5 #m
 
 modelName = "v4n_lane_det.onnx"
 modelPath = "../models/"
@@ -158,8 +159,8 @@ while(canProcessVideo(inputVideos, videoSource)):
 
                     distanceDiff = car['new']['distance'] - car['old']['distance']
                     
-                    #get speed in m/ms and convert to km/h
-                    carSpeed = (distanceDiff/frameTime) * 3600
+                    #get speed in m/ms and convert to m/s
+                    carSpeed = (distanceDiff/frameTime) * 1000
 
                     car['new']['speed'] = carSpeed
 
@@ -170,13 +171,14 @@ while(canProcessVideo(inputVideos, videoSource)):
                     relVel = car['new']['speed']
                     secDist = relVel*reactionTime + pow(reactionTime, 2)/(2*(userVehicleDeceleration - otherVehiclesDeceleration))
 
-                    if(secDist <= car['new']['distance']):
+                    if(secDist <= car['new']['distance'] - vehicleBonnetSize):
                         alert()
 
                 if car['new']['speed']:
                     #Display speed next to car
                     x1, y1, x2, y2 = car['new']['bbox']
-                    cv2.putText(frame, "{:6.2f}km/h".format(car['new']['speed']), (int(x1), int(y1)), cv2.FONT_HERSHEY_PLAIN, fontScale=1, thickness=1, color=(255, 60, 255), lineType=cv2.LINE_AA)
+                    speedKmH = car['new']['speed'] / 3.6 #m/s to km/h
+                    cv2.putText(frame, "{:6.2f}km/h".format(speedKmH), (int(x1), int(y1)), cv2.FONT_HERSHEY_PLAIN, fontScale=1, thickness=1, color=(255, 60, 255), lineType=cv2.LINE_AA)
 
 
 

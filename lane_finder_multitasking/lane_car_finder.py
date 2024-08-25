@@ -1,7 +1,6 @@
 import cv2
 import torch
 from time import time
-from time import sleep
 
 class Detector:
 

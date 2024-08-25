@@ -4,17 +4,20 @@ from progressBar import printProgress
 import sys
 import numpy as np
 from time import time
+import torch
+import os
+from yolopv2 import detect
 
 #-------------PARAMETERS--------------------------
 DATASET_PATH = 'datasets/car/bdd100k/'
 DATASET_JSON_NAME = 'bdd100k_labels_images_val.json'
 MODEL_PATH = '../models/'
-MODEL_NAME = 'yolov8n_openvino_model'
+MODEL_NAME = 'yolopv2.pt'
 #DETECTION METHOD:
 # - detection
 # - multitask
 # - ref_proyect
-DETECTION_METHOD = "detection"
+DETECTION_METHOD = "yolopv2"
 #Limit the number of images
 #set it to 0 to use all the images
 NIMAGES = 0
@@ -76,7 +79,10 @@ elif DETECTION_METHOD == "ref_proyect":
     
     carFinder = CarFinder(64, hist_bins=128, small_size=20, orientations=12, pix_per_cell=8, cell_per_block=1, classifier=cls, scaler=scaler, window_sizes=window_size, window_rois=window_roi)
 
-
+elif DETECTION_METHOD == "yolopv2":
+    model = torch.jit.load(MODEL_PATH + MODEL_NAME)
+    os.environ['CUDA_VISIBLE_DEVICES'] = '-1'  # force torch.cuda.is_available() = False
+    device = torch.device("cpu")
 
 #load labels
 print("Loading labels...")
@@ -145,6 +151,10 @@ for iImg, label in enumerate(labels[:nImg]):
         for car in carFinder.cars:
             detectedBoxes.append(car.filtered_bbox.output().astype(np.int32))
     
+    elif DETECTION_METHOD == "yolopv2":
+        pred = detect(img, model, device)
+        print(pred)
+        continue
     #calculate hits
     for iBox, box in enumerate(realBoxes):
         ious = []
