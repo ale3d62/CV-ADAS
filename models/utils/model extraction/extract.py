@@ -3,4 +3,4 @@
 from ultralytics import YOLO
 
 model = YOLO('../../yolov8n.pt',task='detect')
-model.export(format='OpenVINO')
+model.export(format='onnx')
