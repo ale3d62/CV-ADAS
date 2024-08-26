@@ -14,7 +14,7 @@ DATASET_JSON_NAME = 'bdd100k_labels_images_val.json'
 MODEL_PATH = '../models/'
 MODEL_NAME = 'yolopv2.pt'
 #DETECTION METHOD:
-# - detection
+# - \
 # - multitask
 # - ref_proyect
 # - yolopv2
@@ -25,7 +25,7 @@ NIMAGES = 500
 CONF_THRESHOLD = 0.3
 IOU_THRESHOLD = 0.5
 IOU_COMPARE_THRESHOLD = 0.6
-MODEL_IMG_SIZE = (384, 672)
+MODEL_IMG_SIZE = (384, 640)
 PREVIEW_MODE = False
 PREVIEW_TIME = 500 #ms
 #BDD10k DATASET CLASSES
@@ -82,11 +82,13 @@ elif DETECTION_METHOD == "ref_proyect":
 
 elif DETECTION_METHOD == "yolopv2":
     if(MODEL_IMG_SIZE != (384, 640)):
-        raise Exception("MODEL_IMG_SIZE has to be 384x672")
+        raise Exception("MODEL_IMG_SIZE has to be 384x640")
     
     model = torch.jit.load(MODEL_PATH + MODEL_NAME)
     os.environ['CUDA_VISIBLE_DEVICES'] = '-1'  # force torch.cuda.is_available() = False
     device = torch.device("cpu")
+
+
 
 #load labels
 print("Loading labels...")

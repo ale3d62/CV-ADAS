@@ -21,11 +21,11 @@ MODEL_NAME = 'yolopv2.pt'
 DETECTION_METHOD = "yolopv2"
 #Limit number of images
 #set it to 0 to use all the images
-NIMAGES = 0
+NIMAGES = 500
 CLASSIC_CV_LINE_WIDTH = 8 #px
 CONF_THRESHOLD = 0.3
 IOU_THRESHOLD = 0.5
-MODEL_IMG_SIZE = (384,672)
+MODEL_IMG_SIZE = (384,640)
 PREVIEW_MODE = False
 PREVIEW_TIME = 500 #ms
 #-------------------------------------------------
@@ -81,8 +81,8 @@ elif DETECTION_METHOD == "classic_cv":
     sys.path.insert(0, '../lane_finder_classic_cv')
     from lane_finder import *
 elif DETECTION_METHOD == "yolopv2":
-    if(MODEL_IMG_SIZE != (384, 672)):
-        raise Exception("MODEL_IMG_SIZE has to be 384x672")
+    if(MODEL_IMG_SIZE != (384, 640)):
+        raise Exception("MODEL_IMG_SIZE has to be 384x640")
     model = torch.jit.load(MODEL_PATH + MODEL_NAME)
     os.environ['CUDA_VISIBLE_DEVICES'] = '-1'  # force torch.cuda.is_available() = False
     device = torch.device("cpu")
