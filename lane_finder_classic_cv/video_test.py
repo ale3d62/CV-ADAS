@@ -59,9 +59,10 @@ camParams = {
 frameTimeThreshold = 500 #ms
 
 #Security distance estimation
-userVehicleDeceleration = 9 #m/s^2
-otherVehiclesDeceleration = 11 #m/s^2
+vehiclesDeceleration = 11 #m/s^2
+slowUserBrake = False #user's vehicle has no abs or brakes slower than others
 reactionTime = 0.5 #sec
+reactionAproxVel = 100 #km/h
 vehicleBonnetSize = 1.5 #m
 
 #VISUALIZATION
@@ -81,6 +82,7 @@ showDistances = True
 
 #DEBUGGING
 showTimes = True
+printDistances = True
 #-------------------------------------------------------------
 
 
@@ -179,12 +181,7 @@ while(canProcessVideo(inputVideos, videoSource)):
 
         #GET DISTANCE TO CAR
         carDetector.updateDist(frame.shape, bestLinePointsLeft, bestLinePointsRight)
-        """
-        for distance in distances:
-            d = distance['distance']
-            x1, y1, x2, y2 = distance['bbox']
-            cv2.putText(frame, "Distance: {:6.2f}m".format(d), (int(x1), int(y1)), cv2.FONT_HERSHEY_PLAIN, fontScale=1, thickness=1, color=(100, 100, 255))
-        """
+
         #GET CAR SPEED AND SECURITY ESTIMATION
         cars = carDetector.getCars()
         for car in cars:
@@ -203,11 +200,21 @@ while(canProcessVideo(inputVideos, videoSource)):
                     #Update old car
                     car['old'] = {"distance": car['new']['distance'], "time": car['new']['time']}
 
-                    #Get security distance
+                    #GET SECURITY DISTANCE
                     relVel = car['new']['speed']
-                    secDist = relVel*reactionTime + pow(reactionTime, 2)/(2*(userVehicleDeceleration - otherVehiclesDeceleration))
 
-                    if(secDist <= car['new']['distance'] - vehicleBonnetSize):
+                    secDist = -relVel / (2*vehiclesDeceleration)
+
+                    #if user's car brakes slower, add extra distance
+                    if(slowUserBrake):
+                        secDist *= 1.5
+
+                    secDist  += (reactionAproxVel/3.6) * reactionTime
+
+                    if(printDistances):
+                        print(f"RelVel: " + "{:.2f}".format(relVel) + " Distance: " + "{:.2f}".format(car['new']['distance'] - vehicleBonnetSize) + " secDist: "+"{:.2f}".format(secDist))
+
+                    if(car['new']['distance'] - vehicleBonnetSize <= secDist):
                         alert()
 
                 if(showDistances and car['new']['distance']):

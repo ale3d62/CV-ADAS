@@ -51,9 +51,10 @@ camParams = {
 frameTimeThreshold = 500 #ms
 
 #Security distance estimation
-userVehicleDeceleration = 9 #m/s^2
-otherVehiclesDeceleration = 11 #m/s^2
+vehiclesDeceleration = 11 #m/s^2
+slowUserBrake = False #user's vehicle has no abs or brakes slower than others
 reactionTime = 0.5 #sec
+reactionAproxVel = 100 #km/h
 vehicleBonnetSize = 1.5 #m
 
 #VISUALIZATION
@@ -68,7 +69,8 @@ serverParameters = {
 }
 
 #DEBUGGING
-showTimes = True
+printTimes = True
+printDistances = True
 #------------------------------------
 
 
@@ -165,11 +167,22 @@ while(canProcessVideo(inputVideos, videoSource)):
                     #Update old car
                     car['old'] = {"distance": car['new']['distance'], "time": car['new']['time']}
 
-                    #Get security distance
-                    relVel = car['new']['speed']
-                    secDist = relVel*reactionTime + pow(reactionTime, 2)/(2*(userVehicleDeceleration - otherVehiclesDeceleration))
 
-                    if(secDist <= car['new']['distance'] - vehicleBonnetSize):
+                    #GET SECURITY DISTANCE
+                    relVel = car['new']['speed']
+
+                    secDist = -relVel / (2*vehiclesDeceleration)
+
+                    #if user's car brakes slower, add extra distance
+                    if(slowUserBrake):
+                        secDist *= 1.5
+
+                    secDist  += (reactionAproxVel/3.6) * reactionTime
+
+                    if(printDistances):
+                        print(f"RelVel: " + "{:.2f}".format(relVel) + " Distance: " + "{:.2f}".format(car['new']['distance'] - vehicleBonnetSize) + " secDist: "+"{:.2f}".format(secDist))
+
+                    if(car['new']['distance'] - vehicleBonnetSize <= secDist):
                         alert()
 
                 if(showDistances and car['new']['distance']):
@@ -192,7 +205,7 @@ while(canProcessVideo(inputVideos, videoSource)):
     #Measure average time
     totalTime += (time()-st)*1000
     if(totalFrames>0):
-        if(showTimes):
+        if(printTimes):
             print("[INFO] avg time car detection: "+ str(totalTimeYolo/totalFrames) + "ms")
             print("[INFO] avg time lane detection: "+ str(totalTimeLane/totalFrames) + "ms")
             print("[INFO] avg time total: "+ str(totalTime/totalFrames) + "ms")
