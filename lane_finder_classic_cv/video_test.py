@@ -22,7 +22,7 @@ from ultralytics import YOLO
 # - camera: device camera
 videoSource = "screen" 
 videoPath = "../test_videos/"
-inputVideos = [*range(8,27) + ".mp4"] 
+inputVideos = [f"test{i}.mp4" for i in range(8,27)] 
 screenCaptureW = 1920
 screenCaptureH = 1080
 
@@ -50,9 +50,9 @@ maxLAge = 10
 #CAMERA PARAMETERS
 cameraId = 0
 camParams = {
-    "f": 2.5,
-    "sensorPixelW": 0.008,
-    "roadWidth": 3600
+    "fReal": 4.8,  #mm
+    "fEq": 26.8,     #mm
+    "roadWidth": 3.5 #m
 }
 
 #SPEED MEASURING
@@ -77,6 +77,7 @@ serverParameters = {
 
 showLines = True
 showCars = True
+showDistances = True
 
 #DEBUGGING
 showTimes = True
@@ -209,10 +210,15 @@ while(canProcessVideo(inputVideos, videoSource)):
                     if(secDist <= car['new']['distance'] - vehicleBonnetSize):
                         alert()
 
-                if car['new']['speed']:
+                if(showDistances and car['new']['distance']):
+                    x1, y1, x2, y2 = car['new']['bbox']
+                    cv2.putText(frame, "{:6.2f}m".format(car['new']['distance']), (int(x1), int(y1)), cv2.FONT_HERSHEY_PLAIN, fontScale=1, thickness=1, color=(255, 60, 255), lineType=cv2.LINE_AA)
+
+                if(not showDistances and car['new']['speed']):
                     #Display speed next to car
                     x1, y1, x2, y2 = car['new']['bbox']
-                    cv2.putText(frame, "Rel Speed: {:6.2f}km/h".format(car['new']['speed']), (int(x1), int(y1)), cv2.FONT_HERSHEY_PLAIN, fontScale=1, thickness=2, color=(180, 255, 0))
+                    speedKmH = car['new']['speed'] / 3.6 #m/s to km/h
+                    cv2.putText(frame, "{:6.2f}km/h".format(speedKmH), (int(x1), int(y1)), cv2.FONT_HERSHEY_PLAIN, fontScale=1, thickness=1, color=(255, 60, 255), lineType=cv2.LINE_AA)
 
 
         

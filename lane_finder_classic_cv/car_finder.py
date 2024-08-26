@@ -1,5 +1,6 @@
 import cv2
 from time import time
+from math import sqrt
 class CarDetector:
 
     def __init__(self,yoloConfThresh, yoloIouThresh, trackingIouThresh, camParams, showCars):
@@ -8,9 +9,14 @@ class CarDetector:
         self._yoloIouThresh = yoloIouThresh
         self._trackingIouThresh = trackingIouThresh
         self._id = 0
-        self._f = camParams["f"]
-        self._sensorPixelW = camParams["sensorPixelW"]
+
+        #camera parameters
+        self._fReal = camParams["fReal"]
         self._roadWidth = camParams["roadWidth"]
+        fEq = camParams["fEq"]
+        self._sensorDiag = self._fReal * 43.267 / fEq
+        self._sensorW = None
+
         self._showCars = showCars
         self._currentTime = None
 
@@ -169,6 +175,12 @@ class CarDetector:
 
 
     def getDistance(self, frameDim, bBox, bestLinePointsLeft, bestLinePointsRight):
+        
+        imgHeight, imgWidth, _ = frameDim
+
+        if(not self._sensorW):
+            aspectRatio = imgWidth/imgHeight
+            self._sensorW = (self._sensorDiag * aspectRatio)/(sqrt(1+1/pow(aspectRatio, 2)))
 
         #Get lines data
         lx1, lx2 = bestLinePointsLeft
@@ -177,9 +189,7 @@ class CarDetector:
         #if some lines data is missing
         if(not lx1 or not lx2 or not rx1 or not rx2):
             return None
-
-
-        imgHeight, imgWidth, _ = frameDim
+        
         halfImgHeight = int(imgHeight/2)
 
         #get lines equations (y = mx + b)
@@ -204,11 +214,13 @@ class CarDetector:
         #coordinates x of the lines at the car's height
         lx3 = (y2-lb)/lm
         rx3 = (y2-rb)/rm
+        roadWidthPx = rx3-lx3
 
         #if car is in lane
         #if(self.carInlane(x1,x2,y2, lx3, rx3, vpy, vpx, imgHeight)):
-        d = (self._f*self._roadWidth*imgWidth)/((rx3-lx3)*(self._sensorPixelW*imgWidth))
-        d = d/1000
+        #d = (self._f*self._roadWidth*imgWidth)/((rx3-lx3)*(self._sensorPixelW*imgWidth))
+        d = (self._roadWidth * self._fReal)/(self._sensorW * (roadWidthPx/imgWidth))
+        #d = d/1000
 
         return d
 

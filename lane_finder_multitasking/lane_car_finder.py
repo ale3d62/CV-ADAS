@@ -1,6 +1,7 @@
 import cv2
 import torch
 from time import time
+from math import sqrt
 
 class Detector:
 
@@ -10,9 +11,14 @@ class Detector:
         self._yoloIouThresh = yoloIouThresh
         self._trackingIouThresh = trackingIouThresh
         self._id = 0
-        self._f = camParams["f"]
-        self._sensorPixelW = camParams["sensorPixelW"]
+        
+        #camera parameters
+        self._fReal = camParams["fReal"]
         self._roadWidth = camParams["roadWidth"]
+        fEq = camParams["fEq"]
+        self._sensorDiag = self._fReal * 43.267 / fEq
+        self._sensorW = None
+
         self._showCars = showSettings["cars"]
         self._showLanes = showSettings["lanes"]
         self._currentTime = None
@@ -179,6 +185,10 @@ class Detector:
     def getDistance(self, frameDim, bBox):
 
         imgHeight, imgWidth, _ = frameDim
+
+        if(not self._sensorW):
+            aspectRatio = imgWidth/imgHeight
+            self._sensorW = (self._sensorDiag * aspectRatio)/(sqrt(1+1/pow(aspectRatio, 2)))
         
         x1, y1, x2, y2 = bBox
         
@@ -188,10 +198,12 @@ class Detector:
         if not lx3 or not rx3:
             return None
 
+        roadWidthPx = rx3-lx3
         #if car is in lane
         #if(self.carInlane(x1,x2,y2, lx3, rx3, vpy, vpx, imgHeight)):
-        d = (self._f*self._roadWidth*imgWidth)/((rx3-lx3)*(self._sensorPixelW*imgWidth))
-        d = d/1000
+        #d = (self._f*self._roadWidth*imgWidth)/((rx3-lx3)*(self._sensorPixelW*imgWidth))
+        d = (self._roadWidth * self._fReal)/(self._sensorW * (roadWidthPx/imgWidth))
+        #d = d/1000
 
         return d
 
