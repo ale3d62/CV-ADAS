@@ -5,7 +5,7 @@ from math import sqrt
 
 class Detector:
 
-    def __init__(self, yoloConfThresh, yoloIouThresh, trackingIouThresh, bBoxMinSize, camParams, showSettings):
+    def __init__(self, yoloConfThresh, yoloIouThresh, trackingIouThresh, bBoxMinSize, camParams, showSettings, filterCarInLane):
         self._cars = []
         self._yoloConfThresh = yoloConfThresh
         self._yoloIouThresh = yoloIouThresh
@@ -22,6 +22,7 @@ class Detector:
 
         self._showCars = showSettings["cars"]
         self._showLanes = showSettings["lanes"]
+        self._filterCarInLane = filterCarInLane
         self._currentTime = None
         self._laneMask = None
         self._minLineWidth = 4
@@ -79,8 +80,9 @@ class Detector:
             maxIou = max(ious) if len(ious) > 0 else 0
             if maxIou > self._trackingIouThresh:
                 iMaxIou = ious.index(maxIou)
-                if not bBox['old']:
+                if not bBox['old'] or not bBox['old']['distance']:
                     bBox['old'] = {"distance": bBox['new']['distance'], "time": bBox['new']['time']}
+                
                 bBox['new'] = {"bbox": newBboxes[iMaxIou], "time": self._currentTime, "distance": None, "speed": bBox['new']['speed']}
                 bBox['updated'] = True
                 updatedBboxes.append(bBox)
@@ -99,9 +101,9 @@ class Detector:
         for bBox in self._cars:
             if self._showCars:
                 x1, y1, x2, y2 = bBox['new']['bbox']
-                #id = bBox['new']['id']
+                id = bBox['id']
                 cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 1)
-                #cv2.putText(frame, "ID: {:6.2f}m".format(id), (x1, y1), cv2.FONT_HERSHEY_PLAIN, fontScale=1, thickness=1, color=(100, 100, 255))
+                cv2.putText(frame, "ID:{:6.2f}".format(id), (x1, y2), cv2.FONT_HERSHEY_PLAIN, fontScale=1, thickness=1, color=(100, 100, 255))
             bBox['updated'] = False
 
              
@@ -155,31 +157,29 @@ class Detector:
 
 
 
-    def carInlane(self, x1,x2,y2, lx3, rx3, vpy, vpx, imgHeight):
-    
-        #if y2 is at the wrong height
-        if(y2 > imgHeight or y2 < vpy):
-            return False 
+    def carInlane(self, x1,x2,y2, lx3, rx3, imgDim):
+        imgH, imgW, _ = imgDim
+        imgCenter = imgW/2
         
+        #if y2 is at the wrong height
+        if(y2 > imgH or y2 < imgH * 0.25):
+            return False 
 
         #Detect if car is to the left, center, or right
+
         #center
-        if(x1 < vpx and x2 > vpx):
+        if(x1 < imgCenter and x2 > imgCenter):
             return True
         
-        upPercent = (imgHeight-y2) / (imgHeight-vpy)
-        if(upPercent < 0.42):
-            return False
-
-        boxWidth = x2-x1
+        bBoxW = x2-x1
 
         #left
-        if(x2 < vpx):
-            return (x1 + boxWidth*upPercent*0.9 > lx3)
-
+        if(x1 < imgCenter and x2 < imgCenter):
+            return ((x2-lx3) / bBoxW > 0.3)
+        
         #right
-        if(x1 > vpx):
-            return (x2 - boxWidth*upPercent*0.9 < rx3)
+        if(x1 > imgCenter and x2 > imgCenter):
+            return ((rx3-x1) / bBoxW > 0.3)
 
         return False
     
@@ -207,15 +207,12 @@ class Detector:
             return None
         
         #if car is in lane
-        #if(self.carInlane(x1,x2,y2, lx3, rx3, vpy, vpx, imgHeight)):
-        #d = (self._f*self._roadWidth*imgWidth)/((rx3-lx3)*(self._sensorPixelW*imgWidth))
-        d = (self._roadWidth * self._fReal)/(self._sensorW * (roadWidthPx/imgWidth))
-        #d = d/1000
-
+        if(self._filterCarInLane and not self.carInlane(x1,x2,y2, lx3, rx3, frameDim)):
+            d = None
+        else:
+            d = (self._roadWidth * self._fReal)/(self._sensorW * (roadWidthPx/imgWidth))
+            
         return d
-
-        #else:
-        #    return None
 
 
     #Returns the closest pixel of the mask to both sides of the x,y point at y height in both sides

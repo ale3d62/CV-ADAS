@@ -3,7 +3,7 @@ from time import time
 from math import sqrt
 class CarDetector:
 
-    def __init__(self,yoloConfThresh, yoloIouThresh, trackingIouThresh, bBoxMinSize, camParams, showCars):
+    def __init__(self,yoloConfThresh, yoloIouThresh, trackingIouThresh, bBoxMinSize, camParams, showCars, filterCarInLane):
         self._cars = []
         self._yoloConfThresh = yoloConfThresh
         self._yoloIouThresh = yoloIouThresh
@@ -19,6 +19,7 @@ class CarDetector:
         self._sensorW = None
 
         self._showCars = showCars
+        self._filterCarInLane = filterCarInLane
         self._currentTime = None
 
 
@@ -77,7 +78,7 @@ class CarDetector:
             maxIou = max(ious) if len(ious) > 0 else 0
             if maxIou > self._trackingIouThresh:
                 iMaxIou = ious.index(maxIou)
-                if not bBox['old']:
+                if not bBox['old'] or not bBox['old']['distance']:
                     bBox['old'] = {"distance": bBox['new']['distance'], "time": bBox['new']['time']}
                 bBox['new'] = {"bbox": newBboxes[iMaxIou], "time": self._currentTime, "distance": None, "speed": bBox['new']['speed']}
                 bBox['updated'] = True
@@ -97,9 +98,9 @@ class CarDetector:
         for bBox in self._cars:
             if self._showCars:
                 x1, y1, x2, y2 = bBox['new']['bbox']
-                #id = bBox['new']['id']
+                id = bBox['id']
                 cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 1)
-                #cv2.putText(frame, "ID: {:6.2f}m".format(id), (x1, y1), cv2.FONT_HERSHEY_PLAIN, fontScale=1, thickness=1, color=(100, 100, 255))
+                cv2.putText(frame, "ID:{:6.2f}".format(id), (x1, y2), cv2.FONT_HERSHEY_PLAIN, fontScale=1, thickness=1, color=(100, 100, 255))
             bBox['updated'] = False
 
              
@@ -137,15 +138,9 @@ class CarDetector:
 
 
     def updateDist(self, frameDim, bestLinePointsLeft, bestLinePointsRight):
-        
-        #distances = []
-
         for car in self._cars:
             car['new']['distance'] = self.getDistance(frameDim, car['new']['bbox'], bestLinePointsLeft, bestLinePointsRight)
-            #if car['new']['distance']:
-            #    distances.append(car['new'])
 
-        #return distances
 
 
 
@@ -157,6 +152,7 @@ class CarDetector:
         
 
         #Detect if car is to the left, center, or right
+
         #center
         if(x1 < vpx and x2 > vpx):
             return True
@@ -225,15 +221,9 @@ class CarDetector:
             return None
 
         #if car is in lane
-        #if(self.carInlane(x1,x2,y2, lx3, rx3, vpy, vpx, imgHeight)):
-        #d = (self._f*self._roadWidth*imgWidth)/((rx3-lx3)*(self._sensorPixelW*imgWidth))
-        d = (self._roadWidth * self._fReal)/(self._sensorW * (roadWidthPx/imgWidth))
-        #d = d/1000
-
+        if(self._filterCarInLane and not self.carInlane(x1,x2,y2, lx3, rx3, vpy, vpx, imgHeight)):
+            d = None
+        else:
+            d = (self._roadWidth * self._fReal)/(self._sensorW * (roadWidthPx/imgWidth))
+            
         return d
-
-        #else:
-        #    return None
-
-
-

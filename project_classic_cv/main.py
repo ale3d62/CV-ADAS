@@ -83,6 +83,7 @@ showDistances = True
 
 #DEBUGGING
 showTimes = True
+filterCarInLane = False
 printDistances = True
 #-------------------------------------------------------------
 
@@ -120,7 +121,7 @@ while(canProcessVideo(inputVideos, videoSource)):
     ret = True
     iFrame = 0
     lastLFrame = -sys.maxsize #-INF
-    carDetector = CarDetector(yoloConfThresh, yoloIouThresh, trackingIouThresh, bBoxMinSize, camParams, showCars)
+    carDetector = CarDetector(yoloConfThresh, yoloIouThresh, trackingIouThresh, bBoxMinSize, camParams, showCars, filterCarInLane)
 
 
 
@@ -186,15 +187,23 @@ while(canProcessVideo(inputVideos, videoSource)):
         #GET CAR SPEED AND SECURITY ESTIMATION
         cars = carDetector.getCars()
         for car in cars:
+
+            if(showDistances and car['new']['distance']):
+                x1, y1, x2, y2 = car['new']['bbox']
+                cv2.putText(frame, "{:6.2f}m".format(car['new']['distance']), (int(x1), int(y1)), cv2.FONT_HERSHEY_PLAIN, fontScale=1, thickness=1, color=(255, 60, 255), lineType=cv2.LINE_AA)
+
             if(car['old']):
                 frameTime = car['new']['time'] - car['old']['time']
                 
                 if frameTime > frameTimeThreshold:
                     
+                    if(not car['new']['distance'] or not car['old']['distance']):
+                        continue
+
                     distanceDiff = car['new']['distance'] - car['old']['distance']
                     
-                    #get speed in m/ms and convert to km/h
-                    carSpeed = (distanceDiff/frameTime) * 3600
+                    #get speed in m/ms and convert to m/s
+                    carSpeed = (distanceDiff/frameTime) * 1000
 
                     car['new']['speed'] = carSpeed
 
@@ -213,21 +222,16 @@ while(canProcessVideo(inputVideos, videoSource)):
                     secDist  += (reactionAproxVel/3.6) * reactionTime
 
                     if(printDistances):
-                        print(f"RelVel: " + "{:.2f}".format(relVel) + " Distance: " + "{:.2f}".format(car['new']['distance'] - vehicleBonnetSize) + " secDist: "+"{:.2f}".format(secDist))
+                        print(f"RelVel: " + "{:.2f}".format(relVel) + "m/s Distance: " + "{:.2f}".format(car['new']['distance'] - vehicleBonnetSize) + "m secDist: "+"{:.2f}".format(secDist) + "m")
 
                     if(car['new']['distance'] - vehicleBonnetSize <= secDist):
                         alert()
 
-                if(showDistances and car['new']['distance']):
-                    x1, y1, x2, y2 = car['new']['bbox']
-                    cv2.putText(frame, "{:6.2f}m".format(car['new']['distance']), (int(x1), int(y1)), cv2.FONT_HERSHEY_PLAIN, fontScale=1, thickness=1, color=(255, 60, 255), lineType=cv2.LINE_AA)
-
-                if(not showDistances and car['new']['speed']):
+                if(not showDistances and car['new']['speed'] != None):
                     #Display speed next to car
                     x1, y1, x2, y2 = car['new']['bbox']
-                    speedKmH = car['new']['speed'] / 3.6 #m/s to km/h
+                    speedKmH = car['new']['speed'] * 3.6 #m/s to km/h
                     cv2.putText(frame, "{:6.2f}km/h".format(speedKmH), (int(x1), int(y1)), cv2.FONT_HERSHEY_PLAIN, fontScale=1, thickness=1, color=(255, 60, 255), lineType=cv2.LINE_AA)
-
 
         
              
