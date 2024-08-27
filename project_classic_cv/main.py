@@ -34,6 +34,7 @@ modelPath = "../models/"
 yoloConfThresh = 0.3
 yoloIouThresh = 0.5
 trackingIouThresh = 0.5
+bBoxMinSize = 0.025 #bboxes with a size smaller than 2.5% of the image are ignored
 
 #Indexes of the only yolo object classes to consider
 acceptedClasses = set([2, 3, 4, 6, 7])
@@ -119,7 +120,7 @@ while(canProcessVideo(inputVideos, videoSource)):
     ret = True
     iFrame = 0
     lastLFrame = -sys.maxsize #-INF
-    carDetector = CarDetector(yoloConfThresh, yoloIouThresh, trackingIouThresh, camParams, showCars)
+    carDetector = CarDetector(yoloConfThresh, yoloIouThresh, trackingIouThresh, bBoxMinSize, camParams, showCars)
 
 
 

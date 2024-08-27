@@ -3,11 +3,12 @@ from time import time
 from math import sqrt
 class CarDetector:
 
-    def __init__(self,yoloConfThresh, yoloIouThresh, trackingIouThresh, camParams, showCars):
+    def __init__(self,yoloConfThresh, yoloIouThresh, trackingIouThresh, bBoxMinSize, camParams, showCars):
         self._cars = []
         self._yoloConfThresh = yoloConfThresh
         self._yoloIouThresh = yoloIouThresh
         self._trackingIouThresh = trackingIouThresh
+        self._bBoxMinSize = bBoxMinSize
         self._id = 0
 
         #camera parameters
@@ -111,6 +112,9 @@ class CarDetector:
         self._currentTime = time()*1000
 
         newBboxes = []
+
+        frameH, frameW, _ = frame.shape
+
         #filter yolo results by class
         for result in results.boxes.data.tolist():
 
@@ -124,7 +128,8 @@ class CarDetector:
                 y2 = int(y2)
 
                 bBox = (x1,y1,x2,y2)
-                newBboxes.append(bBox)
+                if(x2-x1 > frameW*self._bBoxMinSize and y2-y1 > frameH*self._bBoxMinSize):
+                    newBboxes.append(bBox)
 
         #Update detected cars
         self.updateCars(frame, newBboxes)
@@ -215,6 +220,9 @@ class CarDetector:
         lx3 = (y2-lb)/lm
         rx3 = (y2-rb)/rm
         roadWidthPx = rx3-lx3
+
+        if roadWidthPx == 0:
+            return None
 
         #if car is in lane
         #if(self.carInlane(x1,x2,y2, lx3, rx3, vpy, vpx, imgHeight)):

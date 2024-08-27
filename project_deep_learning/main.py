@@ -31,6 +31,7 @@ modelPath = "../models/"
 yoloConfThresh = 0.3
 yoloIouThresh = 0.5
 trackingIouThresh = 0.5
+bBoxMinSize = 0.025 #bboxes with a size smaller than 2.5% of the image are ignored
 
 #Select the predictions to show
 showSettings = {
@@ -105,7 +106,7 @@ while(canProcessVideo(inputVideos, videoSource)):
     totalTimeLane = 0
     totalFrames = 0
     ret = True
-    detector = Detector(yoloConfThresh, yoloIouThresh, trackingIouThresh, camParams, showSettings)
+    detector = Detector(yoloConfThresh, yoloIouThresh, trackingIouThresh, bBoxMinSize, camParams, showSettings)
 
 
 

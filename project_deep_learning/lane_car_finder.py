@@ -5,10 +5,11 @@ from math import sqrt
 
 class Detector:
 
-    def __init__(self, yoloConfThresh, yoloIouThresh, trackingIouThresh, camParams, showSettings):
+    def __init__(self, yoloConfThresh, yoloIouThresh, trackingIouThresh, bBoxMinSize, camParams, showSettings):
         self._cars = []
         self._yoloConfThresh = yoloConfThresh
         self._yoloIouThresh = yoloIouThresh
+        self._bBoxMinSize = bBoxMinSize
         self._trackingIouThresh = trackingIouThresh
         self._id = 0
         
@@ -123,6 +124,7 @@ class Detector:
             if self._showLanes:
                 frame[self._laneMask==1] = (30, 255, 15)
                 
+            frameH, frameW, _ = frame.shape
 
             # PROCESS BBOXES
             for bbox in results[0][0].boxes.data.tolist():
@@ -134,7 +136,8 @@ class Detector:
                 y2 = int(y2)
                 bBox = (x1,y1,x2,y2)
 
-                newBboxes.append(bBox)
+                if(x2-x1 > frameW*self._bBoxMinSize and y2-y1 > frameH*self._bBoxMinSize):
+                    newBboxes.append(bBox)
 
         #Update and show detected cars
         self.updateCars(frame, newBboxes)
@@ -199,6 +202,10 @@ class Detector:
             return None
 
         roadWidthPx = rx3-lx3
+
+        if roadWidthPx == 0:
+            return None
+        
         #if car is in lane
         #if(self.carInlane(x1,x2,y2, lx3, rx3, vpy, vpx, imgHeight)):
         #d = (self._f*self._roadWidth*imgWidth)/((rx3-lx3)*(self._sensorPixelW*imgWidth))
