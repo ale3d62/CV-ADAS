@@ -14,10 +14,10 @@ DATASET_JSON_NAME = 'bdd100k_labels_images_val.json'
 MODEL_PATH = '../models/'
 MODEL_NAME = 'yolopv2.pt'
 #DETECTION METHOD:
-# - \
-# - multitask
+# - detection
+# - multitask   (MODEL_IMG_SIZE = (384,672))
 # - ref_proyect
-# - yolopv2
+# - yolopv2     (MODEL_IMG_SIZE = (384,640))
 DETECTION_METHOD = "yolopv2"
 #Limit the number of images
 #set it to 0 to use all the images

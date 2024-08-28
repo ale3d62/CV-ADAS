@@ -21,7 +21,7 @@ labels:
 
 	Extract the following files from the downloaded zip:
 		TUSimple/train_set/clips/0313-1
-		TUSimple/train_set/clips/0313-1
+		TUSimple/train_set/clips/0313-2
 		TUSimple/train_set/label_data_0313.json
 
 	Place the files so that it looks like this:

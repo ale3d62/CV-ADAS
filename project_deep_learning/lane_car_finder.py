@@ -5,7 +5,7 @@ from math import sqrt
 
 class Detector:
 
-    def __init__(self, yoloConfThresh, yoloIouThresh, trackingIouThresh, bBoxMinSize, camParams, showSettings, filterCarInLane):
+    def __init__(self, yoloConfThresh, yoloIouThresh, trackingIouThresh, bBoxMinSize, camParams, showSettings, filterCarInLane, defaultBboxColor):
         self._cars = []
         self._yoloConfThresh = yoloConfThresh
         self._yoloIouThresh = yoloIouThresh
@@ -26,6 +26,7 @@ class Detector:
         self._currentTime = None
         self._laneMask = None
         self._minLineWidth = 4
+        self._bBoxColor = defaultBboxColor
 
 
     def nCars(self):
@@ -94,7 +95,7 @@ class Detector:
         
         #Add remaining newBboxes
         for newBbox in newBboxes:
-            self._cars.append({"id": self.nextId(), "old": None, "new": {"bbox": newBbox, "time": self._currentTime, "distance": None, "speed": None}, "updated": True})
+            self._cars.append({"id": self.nextId(), "color": self._bBoxColor, "old": None, "new": {"bbox": newBbox, "time": self._currentTime, "distance": None, "speed": None}, "updated": True})
 
 
         #show bBoxes
@@ -102,8 +103,8 @@ class Detector:
             if self._showCars:
                 x1, y1, x2, y2 = bBox['new']['bbox']
                 id = bBox['id']
-                cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 1)
-                cv2.putText(frame, "ID:{:6.2f}".format(id), (x1, y2), cv2.FONT_HERSHEY_PLAIN, fontScale=1, thickness=1, color=(100, 100, 255))
+                cv2.rectangle(frame, (x1, y1), (x2, y2), bBox['color'], 1)
+                cv2.putText(frame, "ID: {:.0f}".format(id), (x1, y2), cv2.FONT_HERSHEY_PLAIN, fontScale=1, thickness=1, color=(100, 100, 255))
             bBox['updated'] = False
 
              

@@ -15,9 +15,9 @@ DATASET_JSON_NAME = 'label_data_0313.json'
 MODEL_PATH = '../models/'
 MODEL_NAME = 'yolopv2.pt'
 #DETECTION METHOD:
-# - multitask
+# - multitask   (MODEL_IMG_SIZE = (384,672))
 # - classic_cv
-# - yolopv2
+# - yolopv2     (MODEL_IMG_SIZE = (384,640))
 DETECTION_METHOD = "yolopv2"
 #Limit number of images
 #set it to 0 to use all the images

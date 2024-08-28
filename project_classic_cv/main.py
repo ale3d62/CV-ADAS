@@ -76,13 +76,14 @@ serverParameters = {
     "ip": "0.0.0.0",
     "port": 5000
 }
+defaultBboxColor = (0, 255, 0)
 
 showLines = True
 showCars = True
 showDistances = True
 
 #DEBUGGING
-showTimes = True
+printTimes = True
 filterCarInLane = False
 printDistances = True
 #-------------------------------------------------------------
@@ -90,6 +91,10 @@ printDistances = True
 
 #Load yolo model
 model = YOLO(modelPath + modelName)
+
+#model warmup
+model.predict(source=np.zeros((374,672, 3), dtype=np.uint8), imgsz=(374,672))
+print("Model loaded")
 
 #Load visualizer
 frameVisualizer = FrameVisualizer(visualizationMode, serverParameters)
@@ -103,6 +108,7 @@ if(videoSource == "camera"):
 
 
 #MAIN LOOP
+print("Starting predictions")
 while(canProcessVideo(inputVideos, videoSource)):
     
     #Get input video
@@ -121,7 +127,7 @@ while(canProcessVideo(inputVideos, videoSource)):
     ret = True
     iFrame = 0
     lastLFrame = -sys.maxsize #-INF
-    carDetector = CarDetector(yoloConfThresh, yoloIouThresh, trackingIouThresh, bBoxMinSize, camParams, showCars, filterCarInLane)
+    carDetector = CarDetector(yoloConfThresh, yoloIouThresh, trackingIouThresh, bBoxMinSize, camParams, showCars, filterCarInLane, defaultBboxColor)
 
 
 
@@ -221,11 +227,16 @@ while(canProcessVideo(inputVideos, videoSource)):
 
                     secDist  += (reactionAproxVel/3.6) * reactionTime
 
-                    if(printDistances):
-                        print(f"RelVel: " + "{:.2f}".format(relVel) + "m/s Distance: " + "{:.2f}".format(car['new']['distance'] - vehicleBonnetSize) + "m secDist: "+"{:.2f}".format(secDist) + "m")
+                    if(printDistances and not printTimes):
+                        printMsg = f"\rRelVel: " + "{:.2f}".format(relVel) + "m/s Distance: " + "{:.2f}".format(car['new']['distance'] - vehicleBonnetSize) + "m secDist: "+"{:.2f}".format(secDist) + "m "
+                        sys.stdout.write(printMsg)
+                        sys.stdout.flush()
 
                     if(car['new']['distance'] - vehicleBonnetSize <= secDist):
-                        alert()
+                        car['color'] = (0, 0, 255) #Set bounding box color to red
+                        #alert()
+                    else:
+                        car['color'] = defaultBboxColor
 
                 if(not showDistances and car['new']['speed'] != None):
                     #Display speed next to car
@@ -241,10 +252,10 @@ while(canProcessVideo(inputVideos, videoSource)):
 
 
 
-    #Measure average time
-    totalTime += (time()-st)*1000
-    if(totalFrames>0):
-        if(showTimes):
-            print("[INFO] avg time car detection: "+ str(totalTimeYolo/totalFrames) + "ms")
-            print("[INFO] avg time lane detection: "+ str(totalTimeLane/totalFrames) + "ms")
-            print("[INFO] avg time total: "+ str(totalTime/totalFrames) + "ms")
+        #Measure average time
+        totalTime += (time()-st)*1000
+        if(totalFrames>0):
+            if(printTimes):
+                printMsg = f"\r[INFO] avg times: car detection:"+"{:.2f}".format(totalTimeYolo/totalFrames)+"ms | lane detection:"+"{:.2f}".format(totalTimeLane/totalFrames)+"ms "
+                sys.stdout.write(printMsg)
+                sys.stdout.flush()
