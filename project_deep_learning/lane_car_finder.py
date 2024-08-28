@@ -112,7 +112,7 @@ class Detector:
 
     #Returns the bboxes of the acceptedClasses found in the frame 
     def detect(self, model, frame):
-        results = model.predict(source=frame, imgsz=(384,672), conf=self._yoloConfThresh, iou=self._yoloIouThresh, verbose=False)
+        results = model.predict(source=frame, imgsz=(384,672), conf=self._yoloConfThresh, iou=self._yoloIouThresh, verbose=False, device="cpu")
 
         self._currentTime = time()*1000
 

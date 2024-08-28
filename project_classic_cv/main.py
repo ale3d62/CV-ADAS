@@ -100,8 +100,9 @@ print("Model loaded")
 frameVisualizer = FrameVisualizer(visualizationMode, serverParameters)
 
 #for screen capture
-bounding_box = {'top': 0, 'left': 0, 'width': screenCaptureW, 'height': screenCaptureH}
-sct = mss()
+if(videoSource == "screen"):
+    bounding_box = {'top': 0, 'left': 0, 'width': screenCaptureW, 'height': screenCaptureH}
+    sct = mss()
 
 if(videoSource == "camera"):
     vid = cv2.VideoCapture(cameraId)

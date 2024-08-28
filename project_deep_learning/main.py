@@ -85,23 +85,25 @@ printDistances = True
 model = YOLO(modelPath + modelName)
 
 #model warmup
-model.predict(source=np.zeros((374,672, 3), dtype=np.uint8), imgsz=(374,672))
+model.predict(source=np.zeros((374,672, 3), dtype=np.uint8), imgsz=(374,672), device="cpu")
 print("Model loaded")
 
 #Load visualizer
 frameVisualizer = FrameVisualizer(visualizationMode, serverParameters)
 
 #for screen capture
-bounding_box = {'top': 0, 'left': 0, 'width': screenCaptureW, 'height': screenCaptureH}
-sct = mss()
+if(videoSource == "screen"):
+    bounding_box = {'top': 0, 'left': 0, 'width': screenCaptureW, 'height': screenCaptureH}
+    sct = mss()
 
 
 if(videoSource == "camera"):
     vid = cv2.VideoCapture(cameraId)
+    vid.set(cv2.CAP_PROP_BUFFERSIZE, 1)
 
 
-print("Starting predictions")
 #MAIN LOOP
+print("Starting predictions")
 while(canProcessVideo(inputVideos, videoSource)):
     
     #Get input video
@@ -226,6 +228,6 @@ while(canProcessVideo(inputVideos, videoSource)):
         totalTime += (time()-st)*1000
         if(totalFrames>0):
             if(printTimes):
-                printMsg = f"\r[INFO] avg time: car detection:"+"{:.2f}".format(totalTimeYolo/totalFrames)+"ms "
+                printMsg = f"\r[INFO] avg time: "+"{:.2f}".format(totalTimeYolo/totalFrames)+"ms "
                 sys.stdout.write(printMsg)
                 sys.stdout.flush()
