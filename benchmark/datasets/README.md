@@ -1,12 +1,14 @@
-cars: 
-	You have to download the images and the labels from: https://www.kaggle.com/datasets/solesensei/solesensei_bdd100k
-	They are separate files, the images are in bdd100k, while the labels are in bdd100k_labels_release
+## cars: 
 
-	Extract the following files from the downloaded zips:
-		bdd100k/images/100k/val/
-		bdd100k_labels_images_val.json
+You have to download the images and the labels from: https://www.kaggle.com/datasets/solesensei/solesensei_bdd100k
+They are separate files, the images are in bdd100k, while the labels are in bdd100k_labels_release
 
-	Place the files so that it looks like this:
+Extract the following files from the downloaded zips:
+	bdd100k/images/100k/val/
+	bdd100k_labels_images_val.json
+
+Place the files so that it looks like this:
+
 	datasets/
 	├─ car/
 	│  ├─ bdd100k/
@@ -14,17 +16,16 @@ cars:
 	│  │  ├─ bdd100k_labels_images_val.json
 
 
+## lanes: 
 
-labels:
+https://www.kaggle.com/datasets/manideep1108/tusimple
 
-	lanes: https://www.kaggle.com/datasets/manideep1108/tusimple
+Extract the following files from the downloaded zip:
+	TUSimple/train_set/clips/0313-1
+	TUSimple/train_set/clips/0313-2
+	TUSimple/train_set/label_data_0313.json
 
-	Extract the following files from the downloaded zip:
-		TUSimple/train_set/clips/0313-1
-		TUSimple/train_set/clips/0313-2
-		TUSimple/train_set/label_data_0313.json
-
-	Place the files so that it looks like this:
+Place the files so that it looks like this:
 
 	datasets/
 	├─ lanes/
