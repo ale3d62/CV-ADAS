@@ -80,13 +80,21 @@ defaultBboxColor = (0, 255, 0)
 
 showLines = True
 showCars = True
-showDistances = True
+showDistances = True #Takes priority over showSpeed
+showSpeed = True 
 
 #DEBUGGING
 printTimes = True
 filterCarInLane = False
 printDistances = True
 #-------------------------------------------------------------
+
+#Optimize parameters
+if visualizationMode == "none":
+    showLines = False
+    showCars = False
+    showDistances = False
+    showSpeed = False
 
 
 #Load yolo model
@@ -239,7 +247,7 @@ while(canProcessVideo(inputVideos, videoSource)):
                     else:
                         car['color'] = defaultBboxColor
 
-                if(not showDistances and car['new']['speed'] != None):
+                if(not showDistances and showSpeed and car['new']['speed'] != None):
                     #Display speed next to car
                     x1, y1, x2, y2 = car['new']['bbox']
                     speedKmH = car['new']['speed'] * 3.6 #m/s to km/h
@@ -257,6 +265,6 @@ while(canProcessVideo(inputVideos, videoSource)):
         totalTime += (time()-st)*1000
         if(totalFrames>0):
             if(printTimes):
-                printMsg = f"\r[INFO] avg times: car detection:"+"{:.2f}".format(totalTimeYolo/totalFrames)+"ms | lane detection:"+"{:.2f}".format(totalTimeLane/totalFrames)+"ms "
+                printMsg = f"\r[INFO] avg times: car detection: "+"{:.2f}".format(totalTimeYolo/totalFrames)+"ms | lane detection: "+"{:.2f}".format(totalTimeLane/totalFrames)+"ms "
                 sys.stdout.write(printMsg)
                 sys.stdout.flush()

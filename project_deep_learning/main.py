@@ -71,7 +71,8 @@ showSettings = {
     "cars": True,
     "lanes": True
 }
-showDistances = False
+showDistances = False #Takes priority over showSpeed
+showSpeed = True 
 
 
 #DEBUGGING
@@ -80,6 +81,14 @@ filterCarInLane = False
 printDistances = True
 #------------------------------------
 
+#Optimize parameters
+if visualizationMode == "none":
+    showSettings = {
+        "cars": False,
+        "lanes": False
+    }
+    showDistances = False
+    showSpeed = False
 
 #Load yolo model
 model = YOLO(modelPath + modelName)
@@ -209,7 +218,7 @@ while(canProcessVideo(inputVideos, videoSource)):
                         #alert()
                     else:
                         car['color'] = defaultBboxColor
-                if(not showDistances and car['new']['speed'] != None):
+                if(not showDistances and showSpeed and car['new']['speed'] != None):
                     #Display speed next to car
                     x1, y1, x2, y2 = car['new']['bbox']
                     speedKmH = car['new']['speed'] * 3.6 #m/s to km/h
