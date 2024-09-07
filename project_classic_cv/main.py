@@ -46,7 +46,7 @@ resScaling = 0.5
 enableOptimizations = True
 
 #Maximum number of frames without updating lane
-maxLAge = 10
+maxLAge = 1000
 
 #CAMERA PARAMETERS
 cameraId = 0
@@ -80,7 +80,8 @@ defaultBboxColor = (0, 255, 0)
 
 showLines = True
 showCars = True
-showDistances = True #Takes priority over showSpeed
+showCarId = False
+showDistances = False #Takes priority over showSpeed
 showSpeed = True 
 
 #DEBUGGING
@@ -101,7 +102,7 @@ if visualizationMode == "none":
 model = YOLO(modelPath + modelName)
 
 #model warmup
-model.predict(source=np.zeros((374,672, 3), dtype=np.uint8), imgsz=(374,672))
+model.predict(source=np.zeros((640,640, 3), dtype=np.uint8), imgsz=(640,640))
 print("Model loaded")
 
 #Load visualizer
@@ -136,7 +137,7 @@ while(canProcessVideo(inputVideos, videoSource)):
     ret = True
     iFrame = 0
     lastLFrame = -sys.maxsize #-INF
-    carDetector = CarDetector(yoloConfThresh, yoloIouThresh, trackingIouThresh, bBoxMinSize, camParams, showCars, filterCarInLane, defaultBboxColor)
+    carDetector = CarDetector(yoloConfThresh, yoloIouThresh, trackingIouThresh, bBoxMinSize, camParams, showCars, showCarId, filterCarInLane, defaultBboxColor)
 
 
 

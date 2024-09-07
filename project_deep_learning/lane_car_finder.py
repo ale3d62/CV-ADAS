@@ -21,6 +21,7 @@ class Detector:
         self._sensorW = None
 
         self._showCars = showSettings["cars"]
+        self._showCarId = showSettings["carId"]
         self._showLanes = showSettings["lanes"]
         self._filterCarInLane = filterCarInLane
         self._currentTime = None
@@ -104,7 +105,8 @@ class Detector:
                 x1, y1, x2, y2 = bBox['new']['bbox']
                 id = bBox['id']
                 cv2.rectangle(frame, (x1, y1), (x2, y2), bBox['color'], 1)
-                cv2.putText(frame, "ID: {:.0f}".format(id), (x1, y2), cv2.FONT_HERSHEY_PLAIN, fontScale=1, thickness=1, color=(100, 100, 255))
+                if self._showCarId:
+                    cv2.putText(frame, "ID: {:.0f}".format(id), (x1, y2), cv2.FONT_HERSHEY_PLAIN, fontScale=1, thickness=1, color=(100, 100, 255))
             bBox['updated'] = False
 
              
@@ -112,7 +114,8 @@ class Detector:
 
     #Returns the bboxes of the acceptedClasses found in the frame 
     def detect(self, model, frame):
-        results = model.predict(source=frame, imgsz=(384,672), conf=self._yoloConfThresh, iou=self._yoloIouThresh, verbose=False, device="cpu")
+
+        results = model.predict(source=frame, imgsz=(384,672), conf=self._yoloConfThresh, iou=self._yoloIouThresh, verbose=False, device="cpu", stream=True)
 
         self._currentTime = time()*1000
 

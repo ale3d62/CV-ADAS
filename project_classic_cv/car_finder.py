@@ -3,7 +3,7 @@ from time import time
 from math import sqrt
 class CarDetector:
 
-    def __init__(self,yoloConfThresh, yoloIouThresh, trackingIouThresh, bBoxMinSize, camParams, showCars, filterCarInLane, defaultBboxColor):
+    def __init__(self,yoloConfThresh, yoloIouThresh, trackingIouThresh, bBoxMinSize, camParams, showCars, showCarId, filterCarInLane, defaultBboxColor):
         self._cars = []
         self._yoloConfThresh = yoloConfThresh
         self._yoloIouThresh = yoloIouThresh
@@ -19,6 +19,7 @@ class CarDetector:
         self._sensorW = None
 
         self._showCars = showCars
+        self._showCarId = showCarId
         self._filterCarInLane = filterCarInLane
         self._currentTime = None
         self._bBoxColor = defaultBboxColor
@@ -100,8 +101,9 @@ class CarDetector:
             if self._showCars:
                 x1, y1, x2, y2 = bBox['new']['bbox']
                 id = bBox['id']
-                cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 1)
-                cv2.putText(frame, "ID:{:.0f}".format(id), (x1, y2), cv2.FONT_HERSHEY_PLAIN, fontScale=1, thickness=1, color=(100, 100, 255))
+                cv2.rectangle(frame, (x1, y1), (x2, y2), bBox['color'], 1)
+                if self._showCarId:
+                    cv2.putText(frame, "ID:{:.0f}".format(id), (x1, y2), cv2.FONT_HERSHEY_PLAIN, fontScale=1, thickness=1, color=(100, 100, 255))
             bBox['updated'] = False
 
              

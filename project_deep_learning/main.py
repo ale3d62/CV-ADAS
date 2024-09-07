@@ -45,6 +45,7 @@ camParams = {
 
 #SPEED MEASURING
 frameTimeThreshold = 1000 #ms
+distanceDiffThreshold = 1.5 #m
 
 #Security distance estimation
 vehiclesDeceleration = 11 #m/s^2
@@ -69,6 +70,7 @@ defaultBboxColor = (0, 255, 0)
 #Select the predictions to show
 showSettings = {
     "cars": True,
+    "carId": False,
     "lanes": True
 }
 showDistances = False #Takes priority over showSpeed
@@ -76,7 +78,7 @@ showSpeed = True
 
 
 #DEBUGGING
-printTimes = False
+printTimes = True #Takes priority over printDistances
 filterCarInLane = False
 printDistances = True
 #------------------------------------
@@ -94,7 +96,7 @@ if visualizationMode == "none":
 model = YOLO(modelPath + modelName)
 
 #model warmup
-model.predict(source=np.zeros((374,672, 3), dtype=np.uint8), imgsz=(374,672), device="cpu")
+model.predict(source=np.zeros((384,672, 3), dtype=np.uint8), imgsz=(384,672), device="cpu")
 print("Model loaded")
 
 #Load visualizer
@@ -168,7 +170,7 @@ while(canProcessVideo(inputVideos, videoSource)):
             frameVisualizer.showFrame(frame)
             continue
         
-
+        
         #GET CAR SPEED
         cars = detector.getCars()
         for car in cars:
@@ -179,13 +181,13 @@ while(canProcessVideo(inputVideos, videoSource)):
 
             if(car['old']):
                 frameTime = car['new']['time'] - car['old']['time']
-                
-                if frameTime > frameTimeThreshold:
-                    
-                    if(not car['new']['distance'] or not car['old']['distance']):
-                        continue
 
-                    distanceDiff = car['new']['distance'] - car['old']['distance']
+                if(not car['new']['distance'] or not car['old']['distance']):
+                        continue
+                
+                distanceDiff = car['new']['distance'] - car['old']['distance']
+
+                if frameTime > frameTimeThreshold:
                     
                     #get speed in m/ms and convert to m/s
                     carSpeed = (distanceDiff/frameTime) * 1000
@@ -209,7 +211,7 @@ while(canProcessVideo(inputVideos, videoSource)):
 
 
                     if(printDistances and not printTimes):
-                        printMsg = f"\rRelVel: " + "{:.2f}".format(relVel) + "m/s Distance: " + "{:.2f}".format(car['new']['distance'] - vehicleBonnetSize) + "m secDist: "+"{:.2f}".format(secDist) + "m "
+                        printMsg = f"\rRelVel: " + "{:.2f}".format(relVel) + "m/s Distance: " + "{:.2f}".format(car['new']['distance'] - vehicleBonnetSize) + "m secDist: "+"{:.2f}".format(secDist) + "m         "
                         sys.stdout.write(printMsg)
                         sys.stdout.flush()
 
@@ -240,3 +242,6 @@ while(canProcessVideo(inputVideos, videoSource)):
                 printMsg = f"\r[INFO] avg time: "+"{:.2f}".format(totalTimeYolo/totalFrames)+"ms "
                 sys.stdout.write(printMsg)
                 sys.stdout.flush()
+
+
+print("System exiting successfully")
