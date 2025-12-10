@@ -68,8 +68,11 @@ def findLane(img, bestLinePointsLeft, bestLinePointsRight, showLines):
 
     if(type(lines) == NoneType):
         if(showLines):
-            img = show_lines(img, bestLinePointsLeft, bestLinePointsRight)
-        return (img, bestLinePointsLeft, bestLinePointsRight, linesUpdated)
+            drawnImg = img.copy()
+            show_lines(drawnImg, bestLinePointsLeft, bestLinePointsRight)
+            return (drawnImg, bestLinePointsLeft, bestLinePointsRight, linesUpdated)
+        else:
+            return (img, bestLinePointsLeft, bestLinePointsRight, linesUpdated)
 
     #Lines processing
     linesLeft = [[],[]]
@@ -127,6 +130,8 @@ def findLane(img, bestLinePointsLeft, bestLinePointsRight, showLines):
         linesUpdated = True
 
     if(showLines):
-        img = show_lines(img, bestLinePointsLeft, bestLinePointsRight)
-
-    return (img, bestLinePointsLeft,bestLinePointsRight, linesUpdated)
+        drawnImg = img.copy()
+        show_lines(drawnImg, bestLinePointsLeft, bestLinePointsRight)
+        return (drawnImg, bestLinePointsLeft,bestLinePointsRight, linesUpdated)
+    else:
+        return (img, bestLinePointsLeft,bestLinePointsRight, linesUpdated)

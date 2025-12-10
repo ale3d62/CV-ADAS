@@ -171,7 +171,7 @@ while(canProcessVideo(inputVideos, videoSource)):
                 
         #SCAN FOR LINES
         stl = time()
-        frame, bestLinePointsLeft, bestLinePointsRight, linesUpdated = findLane(frame, bestLinePointsLeft, bestLinePointsRight, showLines)
+        drawnFrame, bestLinePointsLeft, bestLinePointsRight, linesUpdated = findLane(frame, bestLinePointsLeft, bestLinePointsRight, showLines)
         totalTimeLane += (time()-stl)*1000
         
         if enableOptimizations:
@@ -187,7 +187,7 @@ while(canProcessVideo(inputVideos, videoSource)):
 
         #SCAN FOR CARS
         sty = time()
-        carDetector.findCars(model, frame, acceptedClasses)
+        carDetector.findCars(model, frame, drawnFrame, acceptedClasses)
         totalTimeYolo += (time()-sty)*1000
 
         #If there are no cars, skip to next frame
@@ -252,13 +252,13 @@ while(canProcessVideo(inputVideos, videoSource)):
                     #Display speed next to car
                     x1, y1, x2, y2 = car['new']['bbox']
                     speedKmH = car['new']['speed'] * 3.6 #m/s to km/h
-                    cv2.putText(frame, "{:6.2f}km/h".format(speedKmH), (int(x1), int(y1)), cv2.FONT_HERSHEY_PLAIN, fontScale=1, thickness=1, color=(255, 60, 255), lineType=cv2.LINE_AA)
+                    cv2.putText(drawnFrame, "{:6.2f}km/h".format(speedKmH), (int(x1), int(y1)), cv2.FONT_HERSHEY_PLAIN, fontScale=1, thickness=1, color=(255, 60, 255), lineType=cv2.LINE_AA)
 
         
              
 
         #show new frame
-        frameVisualizer.showFrame(frame)
+        frameVisualizer.showFrame(drawnFrame)
 
 
 

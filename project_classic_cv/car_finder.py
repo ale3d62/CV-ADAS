@@ -110,7 +110,7 @@ class CarDetector:
 
 
     #Returns the bboxes of the acceptedClasses found in the frame 
-    def findCars(self, model, frame, acceptedClasses):
+    def findCars(self, model, frame, drawnFrame, acceptedClasses):
         results = model(frame, verbose=False, conf=self._yoloConfThresh, iou=self._yoloIouThresh)[0]
 
         self._currentTime = time()*1000
@@ -136,7 +136,7 @@ class CarDetector:
                     newBboxes.append(bBox)
 
         #Update detected cars
-        self.updateCars(frame, newBboxes)
+        self.updateCars(drawnFrame, newBboxes)
                      
 
 

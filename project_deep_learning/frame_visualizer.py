@@ -21,6 +21,7 @@ class FrameVisualizer:
         if self._mode == "server":
             self._flaskServer.updateFrame(frame)
         elif self._mode == "screen":
+            frame = cv2.resize(frame, (1280, 720), interpolation = cv2.INTER_NEAREST)
             cv2.imshow('Frame',frame)
             cv2.waitKey(1)
 
