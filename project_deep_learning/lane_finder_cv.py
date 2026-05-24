@@ -4,21 +4,33 @@ import numpy as np
 from auxFunctions import *
 
 
+def getVanishingPoint(lineLeft, lineRight, height):
+    if(lineLeft[0] == None or lineRight[0] == None):
+        return None
 
-def show_lines(img, bestLinePointsLeft, bestLinePointsRight):
-    imgHeight, _, _ = img.shape
-    halfImgHeight = int(imgHeight/2)
+    x_bottom1, x_top1 = lineLeft
+    x_bottom2, x_top2 = lineRight
 
-    if(bestLinePointsLeft[0] and bestLinePointsLeft[1]):
-        cv2.line(img, (bestLinePointsLeft[1], halfImgHeight), (bestLinePointsLeft[0], imgHeight), (0, 0, 255), 2)
-    if(bestLinePointsRight[0] and bestLinePointsRight[1]):
-        cv2.line(img, (bestLinePointsRight[1], halfImgHeight), (bestLinePointsRight[0], imgHeight), (0, 0, 255), 2)
-    
-    return img
+    H = height - 1
+
+    # Pendientes en forma x = x_top + m*y
+    m1 = (x_bottom1 - x_top1) / H
+    m2 = (x_bottom2 - x_top2) / H
+
+    # Comprobamos paralelismo
+    if abs(m1 - m2) < 1e-6:
+        return None  # Líneas casi paralelas
+
+    # Coordenada y del punto de fuga
+    y_vp = (x_top2 - x_top1) / (m1 - m2)
+
+    # Coordenada x
+    x_vp = x_top1 + m1 * y_vp
+
+    return (x_vp, y_vp + height/2)
 
 
-
-def findLane(img, bestLinePointsLeft, bestLinePointsRight, showLines):
+def findLaneCV(img, bestLinePointsLeft, bestLinePointsRight):
 
     linesUpdated = False
     #CROP TO HALF THE HEIGHT
@@ -39,16 +51,16 @@ def findLane(img, bestLinePointsLeft, bestLinePointsRight, showLines):
     cv2.cvtColor(halfImg, cv2.COLOR_BGR2LAB, lab)
 
     #Channels: [Light, Green/Magenta, Blue/Yellow] 1-255 in all 3 channels
-    lower_white = np.array([200, 1, 1])
+    lower_white = np.array([150, 1, 1])#140
     upper_white = np.array([255, 255, 255])
 
     mask = cv2.inRange(lab, lower_white, upper_white)
-    
+
     colorMask = cv2.bitwise_and(halfImg,halfImg, mask= mask)
 
 
     #GAUSSIAN
-    #blurred = cv2.GaussianBlur(src=colorMask, ksize=(3, 5), sigmaX=0.8) 
+    #blurred = cv2.GaussianBlur(src=colorMask, ksize=(3, 5), sigmaX=0.8)
 
 
     #OPEN
@@ -62,17 +74,11 @@ def findLane(img, bestLinePointsLeft, bestLinePointsRight, showLines):
 
     edges = cv2.Canny(colorMask, t_lower, t_upper, apertureSize=3, L2gradient=True)
 
-
     #HOUGH
     lines = cv2.HoughLinesP(edges, 1, np.pi/180, 20, minLineLength=50, maxLineGap=30)
 
     if(type(lines) == NoneType):
-        if(showLines):
-            drawnImg = img.copy()
-            show_lines(drawnImg, bestLinePointsLeft, bestLinePointsRight)
-            return (drawnImg, bestLinePointsLeft, bestLinePointsRight, linesUpdated)
-        else:
-            return (img, bestLinePointsLeft, bestLinePointsRight, linesUpdated)
+        return (img, bestLinePointsLeft, bestLinePointsRight, linesUpdated)
 
     #Lines processing
     linesLeft = [[],[]]
@@ -87,10 +93,10 @@ def findLane(img, bestLinePointsLeft, bestLinePointsRight, showLines):
         m = (y2-y1)/(x2-x1)
         b = y1 - m * x1
 
-    
+
         #filter lines by angle
         lineAngle = abs(np.arctan(m))
-    
+
         #not a line (60-120 deg or < 25 deg or > 155 deg)
         if((lineAngle > 1 and lineAngle < 2.2) or lineAngle < 0.43 or lineAngle > 2.7):
             continue
@@ -106,7 +112,7 @@ def findLane(img, bestLinePointsLeft, bestLinePointsRight, showLines):
 
         #Classify left and right
         if(m > 0):  #rightLine
-            if(xCutBottom < imgWidth*0.65):
+            if(xCutBottom < imgWidth*0.55):
                 continue
             linesRight[0].append(xCutBottom)
             linesRight[1].append(xCutTop)
@@ -129,9 +135,4 @@ def findLane(img, bestLinePointsLeft, bestLinePointsRight, showLines):
     if(newBestLinePointsLeft[0] and newBestLinePointsRight[0]):
         linesUpdated = True
 
-    if(showLines):
-        drawnImg = img.copy()
-        show_lines(drawnImg, bestLinePointsLeft, bestLinePointsRight)
-        return (drawnImg, bestLinePointsLeft,bestLinePointsRight, linesUpdated)
-    else:
-        return (img, bestLinePointsLeft,bestLinePointsRight, linesUpdated)
+    return (img, bestLinePointsLeft,bestLinePointsRight, linesUpdated)

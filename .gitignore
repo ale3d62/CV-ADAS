@@ -24,4 +24,4 @@ test_videos/
 *.onnx
 
 #Datasets
-datasets/
+dataset
