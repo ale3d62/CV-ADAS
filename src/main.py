@@ -6,7 +6,6 @@ from distance_detector import DistanceDetector
 from auxFunctions import *
 from time import time
 from ultralytics import YOLO
-import sys
 from collections import deque
 
 #-------------------------------DATASET SEQUENCES------------------------------
@@ -55,20 +54,14 @@ heightCorrection = False
 #distance will be the median of the last n estimated distances
 distanceBufferSize = 5
 
+
 #SPEED MEASURING
 frameTimeThreshold = 1000 #ms
-distanceDiffThreshold = 1.5 #m
-
-#Security distance estimation
-vehiclesDeceleration = 11 #m/s^2
-slowUserBrake = False #user's vehicle has no abs or brakes slower than others
-reactionTime = 0.5 #sec
-reactionAproxVel = 100 #km/h
-vehicleBonnetSize = 1.5 #m
 
 
 #VISUALIZATION
 defaultBboxColor = (0, 255, 0)
+filterCarInLane = True
 
 #Select the predictions to show
 showSettings = {
@@ -76,19 +69,9 @@ showSettings = {
     "carId": False,
     "lanes": True
 }
-showDistances = True #Takes priority over showSpeed
-showSpeed = True
-
 
 #DATA EXTRACTION
-#Suppresses debugging messages unless set to none
 dataExtractionType = DataExtractionTypes.distances
-
-
-#DEBUGGING
-printTimes = False #Takes priority over printDistances
-filterCarInLane = True
-printDistances = False
 #------------------------------------------------------------------------------
 
 #Load model
@@ -188,11 +171,11 @@ while(ret):
         continue
 
 
-    #GET CAR SPEED
+    #GET CAR DISTANCE
     cars = detector.getCars()
     for car in cars:
 
-        if(showDistances and car['new']['distance'] and not printedDataExtraction):
+        if (car['new']['distance'] and not printedDataExtraction):
             x1, y1, x2, y2 = car['new']['bbox']
             cv2.putText(frame,
                         "{:6.2f}m".format(car['new']['distance']), (int(x1), int(y1)),
@@ -219,75 +202,15 @@ while(ret):
             if(not car['new']['distance'] or not car['old']['distance']):
                     continue
 
-            distanceDiff = car['new']['distance'] - car['old']['distance']
-
             if frameTime > frameTimeThreshold:
-
-                #get speed in m/ms and convert to m/s
-                carSpeed = (distanceDiff/frameTime) * 1000
-
-                car['new']['speed'] = carSpeed
 
                 #Update old car
                 car['old'] = {"distance": car['new']['distance'], "time": car['new']['time']}
 
 
-                #GET SECURITY DISTANCE
-                relVel = car['new']['speed']
-
-                secDist = -relVel / (2*vehiclesDeceleration)
-
-                #if user's car brakes slower, add extra distance
-                if(slowUserBrake):
-                    secDist *= 1.5
-
-                secDist  += (reactionAproxVel/3.6) * reactionTime
-
-
-                if(printDistances and
-                   not printTimes and
-                   dataExtractionType == dataExtractionType.none):
-
-                    printMsg = f"\rRelVel: " + "{:.2f}".format(relVel)+"m/s "+\
-                    "Distance: " + "{:.2f}".format(
-                        car['new']['distance'] - vehicleBonnetSize) + "m " +\
-                    "SecDist: "+"{:.2f}".format(secDist) + "m         "
-                    sys.stdout.write(printMsg)
-                    sys.stdout.flush()
-
-                if(car['new']['distance'] - vehicleBonnetSize <= secDist):
-                    car['color'] = (0, 0, 255) #Set bounding box color to red
-                    #alert()
-                else:
-                    car['color'] = defaultBboxColor
-
-            if(not showDistances and showSpeed and car['new']['speed'] != None):
-                #Display speed next to car
-                x1, y1, x2, y2 = car['new']['bbox']
-                speedKmH = car['new']['speed'] * 3.6 #m/s to km/h
-                cv2.putText(frame,
-                            "{:6.2f}km/h".format(speedKmH),
-                            (int(x1), int(y1)),
-                            cv2.FONT_HERSHEY_PLAIN,
-                            fontScale=1,
-                            thickness=1,
-                            color=(255, 60, 255),
-                            lineType=cv2.LINE_AA)
-
-
     #show new frame
     cv2.imshow('Frame',frame)
     cv2.waitKey(1)
-
-
-    #Measure average time
-    totalTime += (time()-st)*1000
-    if(totalFrames>0):
-        if(dataExtractionType == dataExtractionType.none):
-            if(printTimes):
-                printMsg = f"\r[INFO] avg time: "+"{:.2f}".format(totalTimeYolo/totalFrames)+"ms "
-                sys.stdout.write(printMsg)
-                sys.stdout.flush()
 
 
     if(dataExtractionType != dataExtractionType.none and

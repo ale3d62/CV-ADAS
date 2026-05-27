@@ -215,8 +215,7 @@ class DistanceDetector():
                 bBox['new'] = {
                     "bbox": newBboxes[iMaxIou],
                     "time": self.currentTime,
-                    "distance": None,
-                    "speed": bBox['new']['speed']
+                    "distance": None
                     }
                 bBox['updated'] = True
                 updatedBboxes.append(bBox)
