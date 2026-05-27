@@ -1,11 +1,13 @@
 import cv2
 import numpy as np
 from estimation_methods import EstimationMethods
+from data_extraction import DataExtractionTypes
 from distance_detector import DistanceDetector
 from auxFunctions import *
 from time import time
 from ultralytics import YOLO
 import sys
+from collections import deque
 
 #-------------------------------DATASET SEQUENCES------------------------------
 class SequenceConfig:
@@ -21,7 +23,7 @@ sequenceWaymo10923 = SequenceConfig("video_waymo_10923.mp4", 38.69, 36, False)
 sequenceWaymo11199 = SequenceConfig("video_waymo_11199.mp4", 38.99, 36, False)
 
 #Choose here the dataset sequence to use
-sequence = sequenceWaymo10625
+sequence = sequenceKITTI15
 #------------------------------------------------------------------------------
 
 
@@ -32,21 +34,26 @@ videoPath = "../test_videos/"
 modelName = "v4_2_tasks.onnx"
 modelPath = "../models/"
 
+
 #ALGORITHM PARAMETERS
 yoloConfThresh = 0.3
 yoloIouThresh = 0.5
 trackingIouThresh = 0.5
 bBoxMinSize = 0.025 #bboxes with a size smaller than 2.5% of the image are ignored
 
+
 #ESTIMATION METHODS
-# - roadWidthEstimation
-# - inverseProjection
-estimationMethod = EstimationMethods.roadWidthEstimation
+#estimationMethod = EstimationMethods.roadWidthEstimation
+estimationMethod = EstimationMethods.inverseProjection
 
 roadWidth = 3.5 #m
 
 #Use the estimated camera height to increase precision (for method 1)
-heightCorrection = True
+heightCorrection = False
+
+#To filter out estimation errors, a buffer of size n will be used. The selected
+#distance will be the median of the last n estimated distances
+distanceBufferSize = 5
 
 #SPEED MEASURING
 frameTimeThreshold = 1000 #ms
@@ -60,6 +67,7 @@ reactionAproxVel = 100 #km/h
 vehicleBonnetSize = 1.5 #m
 
 
+#VISUALIZATION
 defaultBboxColor = (0, 255, 0)
 
 #Select the predictions to show
@@ -70,6 +78,11 @@ showSettings = {
 }
 showDistances = True #Takes priority over showSpeed
 showSpeed = True
+
+
+#DATA EXTRACTION
+#Suppresses debugging messages unless set to none
+dataExtractionType = DataExtractionTypes.distances
 
 
 #DEBUGGING
@@ -97,6 +110,7 @@ totalTimeLane = 0
 totalFrames = 0
 currentDistance = -1
 ret = True
+distanceBuffer = deque(maxlen=distanceBufferSize)
 
 
 #read first frame to get resolution
@@ -128,7 +142,7 @@ detector = DistanceDetector(
     estimationMethod,
     roadWidth,
     heightCorrection,
-    #Display settings
+    #Visualization settings
     showSettings,
     filterCarInLane,
     defaultBboxColor)
@@ -142,7 +156,7 @@ st = time()
 #====== MAIN LOOP ======
 print("Starting predictions")
 while(ret):
-    printed = False
+    printedDataExtraction = False
     #Get frame
     ret, frame = vid.read()
 
@@ -163,11 +177,7 @@ while(ret):
     #SCAN FOR CARS AND LINES
     sty = time()
     detector.detectDistances(model, frame)
-    ##-----------------------------------TEST-----------------------------
-    #cv2.imshow('Frame',frame)
-    #cv2.waitKey(1)
-    #continue
-    ##---------------------------------------------------------------------
+
     totalTimeYolo += (time()-sty)*1000
 
     #If there are no cars, skip to next frame
@@ -182,7 +192,7 @@ while(ret):
     cars = detector.getCars()
     for car in cars:
 
-        if(showDistances and car['new']['distance'] and not printed):
+        if(showDistances and car['new']['distance'] and not printedDataExtraction):
             x1, y1, x2, y2 = car['new']['bbox']
             cv2.putText(frame,
                         "{:6.2f}m".format(car['new']['distance']), (int(x1), int(y1)),
@@ -192,15 +202,16 @@ while(ret):
                         color=(255, 60, 255),
                         lineType=cv2.LINE_AA)
 
-            if(currentDistance < 0):
-                currentDistance = car['new']['distance']
-            else:
-                newCurrentDistance = car['new']['distance']
-                if abs(currentDistance-newCurrentDistance) < 300:
-                    currentDistance = newCurrentDistance
+            if(car['new']['distance'] > 0):
+                if(currentDistance < 0):
+                    currentDistance = car['new']['distance']
+                else:
+                    newCurrentDistance = car['new']['distance']
+                    distanceBuffer.append(newCurrentDistance)
+                    currentDistance = np.median(distanceBuffer)
 
             print(str(currentDistance).replace(".", ","))
-            printed = True
+            printedDataExtraction = True
 
         if(car['old']):
             frameTime = car['new']['time'] - car['old']['time']
@@ -233,7 +244,10 @@ while(ret):
                 secDist  += (reactionAproxVel/3.6) * reactionTime
 
 
-                if(printDistances and not printTimes):
+                if(printDistances and
+                   not printTimes and
+                   dataExtractionType == dataExtractionType.none):
+
                     printMsg = f"\rRelVel: " + "{:.2f}".format(relVel)+"m/s "+\
                     "Distance: " + "{:.2f}".format(
                         car['new']['distance'] - vehicleBonnetSize) + "m " +\
@@ -269,12 +283,17 @@ while(ret):
     #Measure average time
     totalTime += (time()-st)*1000
     if(totalFrames>0):
-        if(printTimes):
-            printMsg = f"\r[INFO] avg time: "+"{:.2f}".format(totalTimeYolo/totalFrames)+"ms "
-            sys.stdout.write(printMsg)
-            sys.stdout.flush()
-    if(not printed):
+        if(dataExtractionType == dataExtractionType.none):
+            if(printTimes):
+                printMsg = f"\r[INFO] avg time: "+"{:.2f}".format(totalTimeYolo/totalFrames)+"ms "
+                sys.stdout.write(printMsg)
+                sys.stdout.flush()
+
+
+    if(dataExtractionType != dataExtractionType.none and
+       not printedDataExtraction):
         print("-")
+
 
 print("")
 print(f"Totalframes: {totalFrames}")
