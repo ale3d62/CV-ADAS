@@ -1,13 +1,11 @@
 import cv2
 import numpy as np
-from detector_multi_task import DetectorMultiTask
-from detector_single_task import DetectorSingleTask
+from estimation_methods import EstimationMethods
+from distance_detector import DistanceDetector
 from auxFunctions import *
 from time import time
 from ultralytics import YOLO
 import sys
-from lane_finder_cv import findLaneCV, getVanishingPoint, houghFiltering
-from math import atan, cos
 
 #-------------------------------DATASET SEQUENCES------------------------------
 class SequenceConfig:
@@ -27,12 +25,11 @@ sequence = sequenceWaymo10625
 #------------------------------------------------------------------------------
 
 
-#---------------SYSTEM PARAMETERS----------------
+#------------------------------SYSTEM PARAMETERS-------------------------------
 videoPath = "../test_videos/"
 
 #Detection model
-multitaskModelName = "v4_2_tasks.onnx"  #Used for estimation method 1
-detectionModelName = "yolov8n.pt"       #Used for estimation method 2
+modelName = "v4_2_tasks.onnx"
 modelPath = "../models/"
 
 #ALGORITHM PARAMETERS
@@ -42,9 +39,9 @@ trackingIouThresh = 0.5
 bBoxMinSize = 0.025 #bboxes with a size smaller than 2.5% of the image are ignored
 
 #ESTIMATION METHODS
-# 1: Roadwidth and camera parameters
-# 2: Reverse projection
-estimationMethod = 1
+# - roadWidthEstimation
+# - inverseProjection
+estimationMethod = EstimationMethods.roadWidthEstimation
 
 roadWidth = 3.5 #m
 
@@ -79,64 +76,71 @@ showSpeed = True
 printTimes = False #Takes priority over printDistances
 filterCarInLane = True
 printDistances = False
-#------------------------------------
+#------------------------------------------------------------------------------
 
-#Load yolo model
-if(estimationMethod == 1):
-    modelName = multitaskModelName
-elif(estimationMethod == 2):
-    modelName = detectionModelName
-else:
-    print("[ERROR] Select a valid estimation method (1,2)")
-    exit()
-
+#Load model
 model = YOLO(modelPath + modelName)
-
-#model warmup
+#Model warmup
 model.predict(source=np.zeros((384,672, 3), dtype=np.uint8), imgsz=(384,672), device="cpu")
 print("Model loaded")
 
-
-#MAIN LOOP
-print("Starting predictions")
 
 #Get input video
 vid = cv2.VideoCapture(videoPath+sequence.inputVideo)
 vid.set(cv2.CAP_PROP_BUFFERSIZE, 1)
 
 
-#initialize variables
+#====== INITIALIZE VARIABLES =======
 totalTime = 0
 totalTimeYolo = 0
 totalTimeLane = 0
 totalFrames = 0
+currentDistance = -1
 ret = True
+
+
 #read first frame to get resolution
 ret, frame = vid.read()
-if(estimationMethod == 1):
-    detector = DetectorMultiTask(yoloConfThresh, yoloIouThresh, trackingIouThresh, bBoxMinSize, sequence.f, sequence.sensorW, roadWidth, showSettings, filterCarInLane, heightCorrection, defaultBboxColor)
-elif(estimationMethod == 2):
-    #KITTI width adjustment (from 1242px to 1392px)
-    if sequence.isKITTI:
-        frame = cv2.copyMakeBorder(frame, 0, 0, 75, 75, cv2.BORDER_CONSTANT, value=(0,0,0))
+vid.set(cv2.CAP_PROP_POS_FRAMES, 0) #reset video to first frame
 
-    #get possible image padding when resizing
-    #positive when padding is added, negative when the image is cropped
-    _, paddingTop = resizeFrame(frame)
+#KITTI width adjustment (from 1242px to 1392px)
+if sequence.isKITTI:
+    frame = cv2.copyMakeBorder(frame, 0, 0, 75, 75, cv2.BORDER_CONSTANT, value=(0,0,0))
 
-    detector = DetectorSingleTask(yoloConfThresh, yoloIouThresh, trackingIouThresh, bBoxMinSize, sequence.f, sequence.sensorW, frame.shape, paddingTop, showSettings, filterCarInLane, defaultBboxColor)
-else:
-    print("[ERROR] Select a valid estimation method (1,2)")
-    exit()
-currentDistance = -1
-originalImgH, originalImgW, _ = frame.shape
-pixelW = sequence.sensorW/originalImgW
-f_u = sequence.f/pixelW
+#get possible image padding when resizing
+#positive when padding is added, negative when the image is cropped
+_, paddingTop = resizeFrame(frame)
+
+
+detector = DistanceDetector(
+    #Car detection parameters
+    yoloConfThresh,
+    yoloIouThresh,
+    trackingIouThresh,
+    bBoxMinSize,
+    #Camera parameters
+    sequence.f,
+    sequence.sensorW,
+    #Frame resolution
+    frame.shape,
+    paddingTop,
+    #Distance estimation settings
+    estimationMethod,
+    roadWidth,
+    heightCorrection,
+    #Display settings
+    showSettings,
+    filterCarInLane,
+    defaultBboxColor)
+
 
 
 #start timer
 st = time()
 
+
+#====== MAIN LOOP ======
+print("Starting predictions")
 while(ret):
     printed = False
     #Get frame
@@ -153,45 +157,16 @@ while(ret):
     if sequence.isKITTI:
         frame = cv2.copyMakeBorder(frame, 0, 0, 75, 75, cv2.BORDER_CONSTANT, value=(0,0,0))
 
-    #ESTIMATE CAMERA HEIGHT AND ROTATION
-    linePointsLeft = (None, None)
-    linePointsRight = (None, None)
-    frame, linePointsLeft, linePointsRight, linesUpdated = findLaneCV(frame, linePointsLeft, linePointsRight)
-    vanishingPoint = getVanishingPoint(linePointsLeft, linePointsRight, frame.shape[0])
-
-    if(vanishingPoint):
-        v_u = vanishingPoint[0] - originalImgW/2
-        cameraPitch = -atan(v_u/f_u)
-        v_v = vanishingPoint[1] - originalImgH/2
-        cameraYaw = -atan(v_v/f_u*cos(cameraPitch))
-        cameraHeight = roadWidth*((originalImgH-vanishingPoint[1])/vanishingPoint[0])
-
-        detector.setCameraEstimations(cameraPitch, cameraYaw, cameraHeight)
-
-        if(estimationMethod == 2):
-            #Adjust lines to new frame size
-            scaledLinePointsLeft = scaleRoadLinePoints(linePointsLeft, frame)
-            scaledLinePointsRight = scaleRoadLinePoints(linePointsRight, frame)
-            #Update detector road lines
-            detector.setRoadLines(scaledLinePointsLeft, scaledLinePointsRight)
-
     frame, _ = resizeFrame(frame)
 
 
     #SCAN FOR CARS AND LINES
     sty = time()
-    detector.detect(model, frame)
+    detector.detectDistances(model, frame)
     ##-----------------------------------TEST-----------------------------
-    mask = detector.getLaneMask()
-    linePointsLeft = (None, None)
-    linePointsRight = (None, None)
-    linePointsLeft, linePointsRight, linesUpdated = houghFiltering(mask, linePointsLeft, linePointsRight)
-    print(linePointsLeft, linePointsRight)
-    showMask = cv2.cvtColor(mask, cv2.COLOR_GRAY2BGR)
-    showMask = showRoadLines(showMask, linePointsLeft, linePointsRight)
-    cv2.imshow('Frame',showMask)
-    cv2.waitKey(1)
-    continue
+    #cv2.imshow('Frame',frame)
+    #cv2.waitKey(1)
+    #continue
     ##---------------------------------------------------------------------
     totalTimeYolo += (time()-sty)*1000
 
@@ -209,7 +184,14 @@ while(ret):
 
         if(showDistances and car['new']['distance'] and not printed):
             x1, y1, x2, y2 = car['new']['bbox']
-            cv2.putText(frame, "{:6.2f}m".format(car['new']['distance']), (int(x1), int(y1)), cv2.FONT_HERSHEY_PLAIN, fontScale=1, thickness=1, color=(255, 60, 255), lineType=cv2.LINE_AA)
+            cv2.putText(frame,
+                        "{:6.2f}m".format(car['new']['distance']), (int(x1), int(y1)),
+                        cv2.FONT_HERSHEY_PLAIN,
+                        fontScale=1,
+                        thickness=1,
+                        color=(255, 60, 255),
+                        lineType=cv2.LINE_AA)
+
             if(currentDistance < 0):
                 currentDistance = car['new']['distance']
             else:
@@ -252,7 +234,10 @@ while(ret):
 
 
                 if(printDistances and not printTimes):
-                    printMsg = f"\rRelVel: " + "{:.2f}".format(relVel) + "m/s Distance: " + "{:.2f}".format(car['new']['distance'] - vehicleBonnetSize) + "m secDist: "+"{:.2f}".format(secDist) + "m         "
+                    printMsg = f"\rRelVel: " + "{:.2f}".format(relVel)+"m/s "+\
+                    "Distance: " + "{:.2f}".format(
+                        car['new']['distance'] - vehicleBonnetSize) + "m " +\
+                    "SecDist: "+"{:.2f}".format(secDist) + "m         "
                     sys.stdout.write(printMsg)
                     sys.stdout.flush()
 
@@ -261,11 +246,19 @@ while(ret):
                     #alert()
                 else:
                     car['color'] = defaultBboxColor
+
             if(not showDistances and showSpeed and car['new']['speed'] != None):
                 #Display speed next to car
                 x1, y1, x2, y2 = car['new']['bbox']
                 speedKmH = car['new']['speed'] * 3.6 #m/s to km/h
-                cv2.putText(frame, "{:6.2f}km/h".format(speedKmH), (int(x1), int(y1)), cv2.FONT_HERSHEY_PLAIN, fontScale=1, thickness=1, color=(255, 60, 255), lineType=cv2.LINE_AA)
+                cv2.putText(frame,
+                            "{:6.2f}km/h".format(speedKmH),
+                            (int(x1), int(y1)),
+                            cv2.FONT_HERSHEY_PLAIN,
+                            fontScale=1,
+                            thickness=1,
+                            color=(255, 60, 255),
+                            lineType=cv2.LINE_AA)
 
 
     #show new frame
@@ -283,5 +276,6 @@ while(ret):
     if(not printed):
         print("-")
 
+print("")
 print(f"Totalframes: {totalFrames}")
 print("System exiting successfully")
