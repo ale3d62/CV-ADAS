@@ -78,6 +78,14 @@ class DistanceDetector():
     def getCars(self):
         return self.cars
 
+    def getCameraHeight(self):
+        return self.cameraHeight
+
+    def getCameraPitch(self):
+        return self.cameraPitch
+
+    def getCameraYaw(self):
+        return self.cameraYaw
 
 
     #Main method

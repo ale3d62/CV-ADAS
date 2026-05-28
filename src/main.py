@@ -22,7 +22,7 @@ sequenceWaymo10923 = SequenceConfig("video_waymo_10923.mp4", 38.69, 36, False)
 sequenceWaymo11199 = SequenceConfig("video_waymo_11199.mp4", 38.99, 36, False)
 
 #Choose here the dataset sequence to use
-sequence = sequenceKITTI15
+sequence = sequenceWaymo10625
 #------------------------------------------------------------------------------
 
 
@@ -43,7 +43,7 @@ bBoxMinSize = 0.025 #bboxes with a size smaller than 2.5% of the image are ignor
 
 #ESTIMATION METHODS
 #estimationMethod = EstimationMethods.roadWidthEstimation
-estimationMethod = EstimationMethods.inverseProjection
+estimationMethod = EstimationMethods.roadWidthEstimation
 
 roadWidth = 3.5 #m
 
@@ -71,7 +71,7 @@ showSettings = {
 }
 
 #DATA EXTRACTION
-dataExtractionType = DataExtractionTypes.distances
+dataExtractionType = DataExtractionTypes.cameraHeight
 #------------------------------------------------------------------------------
 
 #Load model
@@ -139,15 +139,14 @@ st = time()
 #====== MAIN LOOP ======
 print("Starting predictions")
 while(ret):
-    printedDataExtraction = False
+
     #Get frame
     ret, frame = vid.read()
-
 
     if ret == False:
         break
 
-
+    printedDataExtraction = False
     totalFrames += 1
 
     #KITTI width adjustment (from 1242px to 1392px)
@@ -193,19 +192,20 @@ while(ret):
                     distanceBuffer.append(newCurrentDistance)
                     currentDistance = np.median(distanceBuffer)
 
-            print(str(currentDistance).replace(".", ","))
+
+            if(dataExtractionType == DataExtractionTypes.distances):
+                print(str(currentDistance).replace(".", ","))
+
+            elif(dataExtractionType == DataExtractionTypes.cameraHeight):
+                print(str(detector.getCameraHeight()).replace(".", ","))
+
+            elif(dataExtractionType == DataExtractionTypes.cameraPitch):
+                print(str(detector.getCameraPitch()).replace(".", ","))
+
+            elif(dataExtractionType == DataExtractionTypes.cameraYaw):
+                print(str(detector.getCameraYaw()).replace(".", ","))
+
             printedDataExtraction = True
-
-        if(car['old']):
-            frameTime = car['new']['time'] - car['old']['time']
-
-            if(not car['new']['distance'] or not car['old']['distance']):
-                    continue
-
-            if frameTime > frameTimeThreshold:
-
-                #Update old car
-                car['old'] = {"distance": car['new']['distance'], "time": car['new']['time']}
 
 
     #show new frame
@@ -213,7 +213,7 @@ while(ret):
     cv2.waitKey(1)
 
 
-    if(dataExtractionType != dataExtractionType.none and
+    if(dataExtractionType != DataExtractionTypes.none and
        not printedDataExtraction):
         print("-")
 
