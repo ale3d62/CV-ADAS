@@ -22,7 +22,7 @@ sequenceWaymo10923 = SequenceConfig("video_waymo_10923.mp4", 38.69, 36, False)
 sequenceWaymo11199 = SequenceConfig("video_waymo_11199.mp4", 38.99, 36, False)
 
 #Choose here the dataset sequence to use
-sequence = sequenceWaymo10625
+sequence = sequenceKITTI15
 #------------------------------------------------------------------------------
 
 
@@ -32,7 +32,7 @@ videoPath = "../test_videos/"
 #Detection model
 modelName = "v4_2_tasks.onnx"
 modelPath = "../models/"
-
+resizedFrameSize = (384, 672) #(height, width)
 
 #ALGORITHM PARAMETERS
 yoloConfThresh = 0.3
@@ -43,20 +43,16 @@ bBoxMinSize = 0.025 #bboxes with a size smaller than 2.5% of the image are ignor
 
 #ESTIMATION METHODS
 #estimationMethod = EstimationMethods.roadWidthEstimation
-estimationMethod = EstimationMethods.roadWidthEstimation
+estimationMethod = EstimationMethods.inverseProjection
 
 roadWidth = 3.5 #m
 
 #Use the estimated camera height to increase precision (for method 1)
-heightCorrection = False
+heightCorrection = True
 
 #To filter out estimation errors, a buffer of size n will be used. The selected
 #distance will be the median of the last n estimated distances
 distanceBufferSize = 5
-
-
-#SPEED MEASURING
-frameTimeThreshold = 1000 #ms
 
 
 #VISUALIZATION
@@ -71,7 +67,11 @@ showSettings = {
 }
 
 #DATA EXTRACTION
-dataExtractionType = DataExtractionTypes.cameraHeight
+#dataExtractionType = DataExtractionTypes.none
+dataExtractionType = DataExtractionTypes.distances
+#dataExtractionType = DataExtractionTypes.cameraHeight
+#dataExtractionType = DataExtractionTypes.cameraPitch
+#dataExtractionType = DataExtractionTypes.cameraYaw
 #------------------------------------------------------------------------------
 
 #Load model
@@ -106,7 +106,7 @@ if sequence.isKITTI:
 
 #get possible image padding when resizing
 #positive when padding is added, negative when the image is cropped
-_, paddingTop = resizeFrame(frame)
+_, paddingTop = resizeFrame(frame, resizedFrameSize)
 
 
 detector = DistanceDetector(
@@ -120,6 +120,7 @@ detector = DistanceDetector(
     sequence.sensorW,
     #Frame resolution
     frame.shape,
+    resizedFrameSize,
     paddingTop,
     #Distance estimation settings
     estimationMethod,
@@ -153,7 +154,7 @@ while(ret):
     if sequence.isKITTI:
         frame = cv2.copyMakeBorder(frame, 0, 0, 75, 75, cv2.BORDER_CONSTANT, value=(0,0,0))
 
-    frame, _ = resizeFrame(frame)
+    frame, _ = resizeFrame(frame, resizedFrameSize)
 
 
     #SCAN FOR CARS AND LINES
@@ -200,10 +201,10 @@ while(ret):
                 print(str(detector.getCameraHeight()).replace(".", ","))
 
             elif(dataExtractionType == DataExtractionTypes.cameraPitch):
-                print(str(detector.getCameraPitch()).replace(".", ","))
+                print(str(np.degrees(detector.getCameraPitch())).replace(".", ","))
 
             elif(dataExtractionType == DataExtractionTypes.cameraYaw):
-                print(str(detector.getCameraYaw()).replace(".", ","))
+                print(str(np.degrees(detector.getCameraYaw())).replace(".", ","))
 
             printedDataExtraction = True
 

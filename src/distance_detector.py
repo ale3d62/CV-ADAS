@@ -17,7 +17,8 @@ class DistanceDetector():
                  _f,
                  _sensorW,
                  #Frame resolution
-                 _frameShape,
+                 _originalFrameShape,
+                 _resizedFrameSize,
                  _paddingTop,
                  #Distance estimation settings
                  _estimationMethod,
@@ -41,7 +42,8 @@ class DistanceDetector():
         self.f_v        = 0 #...
 
         #Frame resolution
-        self.originalImgW, self.originalImgH, _ = _frameShape
+        self.originalImgH, self.originalImgW, _ = _originalFrameShape
+        self.resizedImgH, self.resizedImgW = _resizedFrameSize
         self.paddingTop = _paddingTop
 
         #Distance estimation settings
@@ -67,7 +69,7 @@ class DistanceDetector():
         self.currentTime        = None
 
         #Road lines
-        self.roadLane = RoadLane(_minLineWidth=2)
+        self.roadLane = RoadLane(2, _originalFrameShape, self.paddingTop)
 
 
 
@@ -181,12 +183,11 @@ class DistanceDetector():
             self.f_u = self.f_v = self.f/pixelW
 
             #Get vanishing point
-            vanishingPoint = self.roadLane.estimateVanishingPoint()
+            vanishingPoint = self.roadLane.estimateOriginalVanishingPoint(self.resizedImgH, self.resizedImgW)
 
             if(vanishingPoint):
                 v_u = vanishingPoint[0] - self.originalImgW / 2
                 v_v = vanishingPoint[1] - self.originalImgH / 2
-
                 self.cameraPitch = -atan(v_u / self.f_u)
                 self.cameraYaw = -atan(v_v / self.f_u * cos(self.cameraPitch))
                 self.cameraHeight = self.roadWidth * (

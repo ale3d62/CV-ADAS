@@ -8,11 +8,15 @@ from auxFunctions import getBestLine
 class RoadLane():
 
     def __init__(self,
-                 _minLineWidth):
+                 _minLineWidth,
+                 _originalImageShape,
+                 _paddingTop):
         self.linePointsLeft = (None, None)
         self.linePointsRight = (None, None)
         self.laneMask = None
         self.minLineWidth = _minLineWidth
+        self.originalImgW, self.originalImgH, _ = _originalImageShape
+        self.paddingTop = _paddingTop
 
 
 
@@ -174,14 +178,19 @@ class RoadLane():
 
 
 
-    def estimateVanishingPoint(self):
+    def estimateOriginalVanishingPoint(self, imgH, imgW):
 
         cleanLaneMask = self.getCleanLaneMask()
         self.houghFiltering(cleanLaneMask)
 
-        return getVanishingPoint(self.linePointsLeft,
-                                 self.linePointsRight,
-                                 cleanLaneMask.shape[0])
+        frameSize = (imgH, imgW)
+
+        scaledLinePointsLeft = scaleRoadLinePoints(self.linePointsLeft, frameSize, self.originalImgW, self.originalImgH)
+        scaledLinePointsRight = scaleRoadLinePoints(self.linePointsRight, frameSize, self.originalImgW, self.originalImgH)
+
+        return getVanishingPoint(scaledLinePointsLeft,
+                                 scaledLinePointsRight,
+                                 self.originalImgH)
 
 
 
@@ -205,4 +214,54 @@ def getVanishingPoint(lineLeft, lineRight, height):
     y_vp = (x_top2 - x_top1) / (m1 - m2)
     x_vp = x_top1 + m1 * y_vp
 
-    return (x_vp, y_vp + height/2)
+    return (y_vp + height/2, x_vp)
+
+
+
+def scaleRoadLinePoints(linePoints, frameSize, target_w=672, target_h=384):
+
+    if(linePoints[0] == None or linePoints[1] == None):
+            return linePoints
+
+    frameH, frameW = frameSize
+
+    target_ratio = target_w / target_h
+    current_ratio = frameW / frameH
+
+    scale_x = target_w / frameW
+    scale_y_inv = frameW / target_w
+
+    if current_ratio > target_ratio:
+        #Image too wide
+        new_h = int(frameW / target_ratio)
+        padding_total = new_h - frameH
+        pad_top = padding_total // 2
+
+        y_bottom_orig = target_h * scale_y_inv - pad_top
+        y_top_orig = (target_h / 2) * scale_y_inv - pad_top
+
+    elif current_ratio < target_ratio:
+        #Image too tall
+        crop_h = int(frameW / target_ratio)
+        start_y = (frameH - crop_h) // 2
+
+        y_bottom_orig = target_h * scale_y_inv + start_y
+        y_top_orig = (target_h / 2) * scale_y_inv + start_y
+
+    else:
+        #Same aspect ratio
+        y_bottom_orig = frameH
+        y_top_orig = frameH / 2
+
+    x_cut_bottom, x_cut_top = linePoints
+
+    dx = x_cut_bottom - x_cut_top
+    dy = frameH / 2  # h - h/2
+
+    x_orig_bottom = x_cut_top + (dx / dy) * (y_bottom_orig - frameH / 2)
+    x_orig_top = x_cut_top + (dx / dy) * (y_top_orig - frameH / 2)
+
+    new_x_cut_bottom = int(x_orig_bottom * scale_x)
+    new_x_cut_top = int(x_orig_top * scale_x)
+
+    return (new_x_cut_bottom, new_x_cut_top)
