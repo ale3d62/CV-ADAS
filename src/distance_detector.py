@@ -4,6 +4,8 @@ from estimation_methods import EstimationMethods, roadWidthDistanceEstimation, i
 from road_lane import RoadLane
 import cv2
 from math import atan, cos
+import numpy as np
+from collections import deque
 
 
 class DistanceDetector():
@@ -52,9 +54,13 @@ class DistanceDetector():
         self.heightCorrection   = _heightCorrection
 
         #Camera estimations (these are set in setCameraEstimations())
-        self.cameraPitch = 0
-        self.cameraYaw = 0
+        camParameterBufferSize = 40
+        self.cameraHeightBuffer = deque(maxlen=camParameterBufferSize)
         self.cameraHeight = 0
+        self.cameraPitchBuffer = deque(maxlen=camParameterBufferSize)
+        self.cameraPitch = 0
+        self.cameraYawBuffer = deque(maxlen=camParameterBufferSize)
+        self.cameraYaw = 0
 
         #Settings
         self.showCars           = _showSettings["cars"]
@@ -90,6 +96,7 @@ class DistanceDetector():
         return self.cameraYaw
 
 
+
     #Main method
     def detectDistances(self, model, frame):
 
@@ -108,6 +115,41 @@ class DistanceDetector():
         #Show detected lanes
         if self.showLanes:
             self.roadLane.showLane(self.estimationMethod, frame)
+
+
+
+    def estimateCameraParameters(self):
+        #Get focal distances
+        if(self.originalImgW > 0):
+            pixelW = self.sensorW/self.originalImgW
+            self.f_u = self.f_v = self.f/pixelW
+
+            #Get vanishing point (vpx, vpy)
+            vanishingPoint = self.roadLane.estimateVanishingPoint(self.resizedImgH)
+            vanishingPoint = self.roadLane.scaleVanishingPoint(vanishingPoint, self.resizedImgH, self.resizedImgW)
+
+            #Get road width in pixels at the bottom of the image
+            scaledLinePointsLeft = self.roadLane.scaleRoadLinePoints(self.roadLane.linePointsLeft, (self.resizedImgH, self.resizedImgW), self.originalImgW, self.originalImgH)
+            scaledLinePointsRight = self.roadLane.scaleRoadLinePoints(self.roadLane.linePointsRight, (self.resizedImgH, self.resizedImgW), self.originalImgW, self.originalImgH)
+
+            w_px = scaledLinePointsRight[0]-scaledLinePointsLeft[0]
+
+            if(vanishingPoint):
+                v_u = vanishingPoint[1] - self.originalImgH / 2
+                v_v = vanishingPoint[0] - self.originalImgW / 2
+                #Pitch
+                estimatedCameraPitch = -atan(v_u / self.f_u)
+                self.cameraPitchBuffer.append(estimatedCameraPitch)
+                self.cameraPitch = np.average(self.cameraPitchBuffer)
+                #Yaw
+                estimatedCameraYaw = -atan(v_v / self.f_u * cos(estimatedCameraPitch))
+                self.cameraYawBuffer.append(estimatedCameraYaw)
+                self.cameraYaw = np.average(self.cameraYawBuffer)
+                #Height
+                estimatedCameraHeight = self.roadWidth * (
+                    (self.originalImgH - vanishingPoint[1]) / w_px)
+                self.cameraHeightBuffer.append(estimatedCameraHeight)
+                self.cameraHeight = np.average(self.cameraHeightBuffer)
 
 
 
@@ -173,34 +215,6 @@ class DistanceDetector():
         iou = interArea / unionArea
 
         return iou
-
-
-
-    def estimateCameraParameters(self):
-        #Get focal distances
-        if(self.originalImgW > 0):
-            pixelW = self.sensorW/self.originalImgW
-            self.f_u = self.f_v = self.f/pixelW
-
-            #Get vanishing point (vpx, vpy)
-            vanishingPoint = self.roadLane.estimateVanishingPoint(self.resizedImgH)
-            vanishingPoint = self.roadLane.scaleVanishingPoint(vanishingPoint, self.resizedImgH, self.resizedImgW)
-
-            #Get road width in pixels at the bottom of the image
-            scaledLinePointsLeft = self.roadLane.scaleRoadLinePoints(self.roadLane.linePointsLeft, (self.resizedImgH, self.resizedImgW), self.originalImgW, self.originalImgH)
-            scaledLinePointsRight = self.roadLane.scaleRoadLinePoints(self.roadLane.linePointsRight, (self.resizedImgH, self.resizedImgW), self.originalImgW, self.originalImgH)
-
-            w_px = scaledLinePointsRight[0]-scaledLinePointsLeft[0]
-
-            if(vanishingPoint):
-                v_u = vanishingPoint[1] - self.originalImgH / 2
-                v_v = vanishingPoint[0] - self.originalImgW / 2
-                self.cameraPitch = -atan(v_u / self.f_u)
-                self.cameraYaw = -atan(v_v / self.f_u * cos(self.cameraPitch))
-                self.cameraHeight = self.roadWidth * (
-                    (self.originalImgH - vanishingPoint[1]) / w_px)
-
-
 
     #Updates the cars bounding boxes
     def updateCars(self, frame, newBboxes):
@@ -276,8 +290,6 @@ class DistanceDetector():
                                 thickness=1,
                                 color=(100, 100, 255))
             bBox['updated'] = False
-
-
 
     #Updates the distance to every car
     def updateDistances(self, frameDim):
