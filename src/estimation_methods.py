@@ -37,7 +37,15 @@ def roadWidthDistanceEstimation(frameDim,
         return None
 
     #if car is in lane
+#    vanishingPoint = roadLane.estimateVanishingPoint(imgHeight)
+#
+#    if(not vanishingPoint):
+#        return None
+#
+#    vpy, vpx = vanishingPoint
+
     if(filterCarInLane and not carInlane(x1, x2, y2, lx3, rx3, frameDim)):
+    #if(filterCarInLane and not carInlane2(x1, x2, y2, lx3, rx3,vpy, vpx, imgHeight)):
         return None
     else:
         d = (roadWidth * f)/(sensorW * (roadWidthPx/imgWidth))
@@ -164,5 +172,37 @@ def carInlane(x1, x2, y2, lx3, rx3, imgDim):
     #right
     if(x1 > imgCenter and x2 > imgCenter):
         return ((rx3-x1) / bBoxW > 0.3)
+
+    return False
+
+
+
+def carInlane2(x1,x2,y2, lx3, rx3, vpy, vpx, imgHeight):
+
+    #print(f"x1: {x1}, x2: {x2}, y2: {y2}, lx3: {lx3}, rx3: {rx3}, vpy: {vpy}, vpx: {vpx}, imgH: {imgHeight}")
+    #if y2 is at the wrong height
+    if(y2 > imgHeight or y2 < vpy):
+        return False
+
+
+    #Detect if car is to the left, center, or right
+
+    #center
+    if(x1 < vpx and x2 > vpx):
+        return True
+
+    upPercent = (imgHeight-y2) / (imgHeight-vpy)
+    if(upPercent < 0.42):
+        return False
+
+    boxWidth = x2-x1
+
+    #left
+    if(x2 < vpx):
+        return (x1 + boxWidth*upPercent*0.9 > lx3)
+
+    #right
+    if(x1 > vpx):
+        return (x2 - boxWidth*upPercent*0.9 < rx3)
 
     return False

@@ -182,16 +182,23 @@ class DistanceDetector():
             pixelW = self.sensorW/self.originalImgW
             self.f_u = self.f_v = self.f/pixelW
 
-            #Get vanishing point
-            vanishingPoint = self.roadLane.estimateOriginalVanishingPoint(self.resizedImgH, self.resizedImgW)
+            #Get vanishing point (vpx, vpy)
+            vanishingPoint = self.roadLane.estimateVanishingPoint(self.resizedImgH)
+            vanishingPoint = self.roadLane.scaleVanishingPoint(vanishingPoint, self.resizedImgH, self.resizedImgW)
+
+            #Get road width in pixels at the bottom of the image
+            scaledLinePointsLeft = self.roadLane.scaleRoadLinePoints(self.roadLane.linePointsLeft, (self.resizedImgH, self.resizedImgW), self.originalImgW, self.originalImgH)
+            scaledLinePointsRight = self.roadLane.scaleRoadLinePoints(self.roadLane.linePointsRight, (self.resizedImgH, self.resizedImgW), self.originalImgW, self.originalImgH)
+
+            w_px = scaledLinePointsRight[0]-scaledLinePointsLeft[0]
 
             if(vanishingPoint):
-                v_u = vanishingPoint[0] - self.originalImgW / 2
-                v_v = vanishingPoint[1] - self.originalImgH / 2
+                v_u = vanishingPoint[1] - self.originalImgH / 2
+                v_v = vanishingPoint[0] - self.originalImgW / 2
                 self.cameraPitch = -atan(v_u / self.f_u)
                 self.cameraYaw = -atan(v_v / self.f_u * cos(self.cameraPitch))
                 self.cameraHeight = self.roadWidth * (
-                    (self.originalImgH - vanishingPoint[1]) / vanishingPoint[0])
+                    (self.originalImgH - vanishingPoint[1]) / w_px)
 
 
 

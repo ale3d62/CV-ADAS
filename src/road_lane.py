@@ -15,7 +15,7 @@ class RoadLane():
         self.linePointsRight = (None, None)
         self.laneMask = None
         self.minLineWidth = _minLineWidth
-        self.originalImgW, self.originalImgH, _ = _originalImageShape
+        self.originalImgH, self.originalImgW, _ = _originalImageShape
         self.paddingTop = _paddingTop
 
 
@@ -178,19 +178,115 @@ class RoadLane():
 
 
 
-    def estimateOriginalVanishingPoint(self, imgH, imgW):
+    def estimateVanishingPoint(self, imgH):
 
         cleanLaneMask = self.getCleanLaneMask()
         self.houghFiltering(cleanLaneMask)
 
-        frameSize = (imgH, imgW)
+        return getVanishingPoint(self.linePointsLeft,
+                                 self.linePointsRight,
+                                 imgH)
 
-        scaledLinePointsLeft = scaleRoadLinePoints(self.linePointsLeft, frameSize, self.originalImgW, self.originalImgH)
-        scaledLinePointsRight = scaleRoadLinePoints(self.linePointsRight, frameSize, self.originalImgW, self.originalImgH)
 
-        return getVanishingPoint(scaledLinePointsLeft,
-                                 scaledLinePointsRight,
-                                 self.originalImgH)
+
+    def scaleVanishingPoint(self, vp_resized, target_h, target_w):
+        x, y = vp_resized
+
+        h, w = self.originalImgH, self.originalImgW
+        target_ratio = target_w / target_h
+        current_ratio = w / h
+
+        #Vertical padding
+        if current_ratio > target_ratio:
+            #Height after padding
+            new_h = w / target_ratio
+            padding_total = new_h - h
+            pad_top = padding_total / 2
+
+            #Undo resize
+            scale_y = new_h / target_h
+            scale_x = w / target_w
+
+            x_original = x * scale_x
+            y_original = y * scale_y
+
+            #Undo padding
+            y_original -= pad_top
+
+        #Center crop
+        elif current_ratio < target_ratio:
+            crop_h = w / target_ratio
+            start_y = (h - crop_h) / 2
+
+            #Undo resize
+            scale_y = crop_h / target_h
+            scale_x = w / target_w
+
+            x_original = x * scale_x
+            y_original = y * scale_y
+
+            #Undo crop
+            y_original += start_y
+
+        #Same aspect ratio
+        else:
+            scale_x = w / target_w
+            scale_y = h / target_h
+
+            x_original = x * scale_x
+            y_original = y * scale_y
+
+        return (x_original, y_original)
+
+
+
+    def scaleRoadLinePoints(self, linePoints, frameSize, target_w=672, target_h=384):
+
+        if(linePoints[0] == None or linePoints[1] == None):
+                return linePoints
+
+        frameH, frameW = frameSize
+
+        target_ratio = target_w / target_h
+        current_ratio = frameW / frameH
+
+        scale_x = target_w / frameW
+        scale_y_inv = frameW / target_w
+
+        if current_ratio > target_ratio:
+            #Image too wide
+            new_h = int(frameW / target_ratio)
+            padding_total = new_h - frameH
+            pad_top = padding_total // 2
+
+            y_bottom_orig = target_h * scale_y_inv - pad_top
+            y_top_orig = (target_h / 2) * scale_y_inv - pad_top
+
+        elif current_ratio < target_ratio:
+            #Image too tall
+            crop_h = int(frameW / target_ratio)
+            start_y = (frameH - crop_h) // 2
+
+            y_bottom_orig = target_h * scale_y_inv + start_y
+            y_top_orig = (target_h / 2) * scale_y_inv + start_y
+
+        else:
+            #Same aspect ratio
+            y_bottom_orig = frameH
+            y_top_orig = frameH / 2
+
+        x_cut_bottom, x_cut_top = linePoints
+
+        dx = x_cut_bottom - x_cut_top
+        dy = frameH / 2  # h - h/2
+
+        x_orig_bottom = x_cut_top + (dx / dy) * (y_bottom_orig - frameH / 2)
+        x_orig_top = x_cut_top + (dx / dy) * (y_top_orig - frameH / 2)
+
+        new_x_cut_bottom = int(x_orig_bottom * scale_x)
+        new_x_cut_top = int(x_orig_top * scale_x)
+
+        return (new_x_cut_bottom, new_x_cut_top)
 
 
 
@@ -214,54 +310,4 @@ def getVanishingPoint(lineLeft, lineRight, height):
     y_vp = (x_top2 - x_top1) / (m1 - m2)
     x_vp = x_top1 + m1 * y_vp
 
-    return (y_vp + height/2, x_vp)
-
-
-
-def scaleRoadLinePoints(linePoints, frameSize, target_w=672, target_h=384):
-
-    if(linePoints[0] == None or linePoints[1] == None):
-            return linePoints
-
-    frameH, frameW = frameSize
-
-    target_ratio = target_w / target_h
-    current_ratio = frameW / frameH
-
-    scale_x = target_w / frameW
-    scale_y_inv = frameW / target_w
-
-    if current_ratio > target_ratio:
-        #Image too wide
-        new_h = int(frameW / target_ratio)
-        padding_total = new_h - frameH
-        pad_top = padding_total // 2
-
-        y_bottom_orig = target_h * scale_y_inv - pad_top
-        y_top_orig = (target_h / 2) * scale_y_inv - pad_top
-
-    elif current_ratio < target_ratio:
-        #Image too tall
-        crop_h = int(frameW / target_ratio)
-        start_y = (frameH - crop_h) // 2
-
-        y_bottom_orig = target_h * scale_y_inv + start_y
-        y_top_orig = (target_h / 2) * scale_y_inv + start_y
-
-    else:
-        #Same aspect ratio
-        y_bottom_orig = frameH
-        y_top_orig = frameH / 2
-
-    x_cut_bottom, x_cut_top = linePoints
-
-    dx = x_cut_bottom - x_cut_top
-    dy = frameH / 2  # h - h/2
-
-    x_orig_bottom = x_cut_top + (dx / dy) * (y_bottom_orig - frameH / 2)
-    x_orig_top = x_cut_top + (dx / dy) * (y_top_orig - frameH / 2)
-
-    new_x_cut_bottom = int(x_orig_bottom * scale_x)
-    new_x_cut_top = int(x_orig_top * scale_x)
-
-    return (new_x_cut_bottom, new_x_cut_top)
+    return (x_vp, y_vp + height/2)

@@ -20,9 +20,11 @@ sequenceKITTI15 = SequenceConfig("video_KITTI_15.mp4", 4, 7.469, True)
 sequenceWaymo10625 = SequenceConfig("video_waymo_10625.mp4", 38.54, 36, False)
 sequenceWaymo10923 = SequenceConfig("video_waymo_10923.mp4", 38.69, 36, False)
 sequenceWaymo11199 = SequenceConfig("video_waymo_11199.mp4", 38.99, 36, False)
+sequenceWaymo13064 = SequenceConfig("video_waymo_13064.mp4", 38.33, 36, False)
+sequenceWaymo13182 = SequenceConfig("video_waymo_13182.mp4", 38.95, 36, False)
 
 #Choose here the dataset sequence to use
-sequence = sequenceKITTI15
+sequence = sequenceWaymo10923
 #------------------------------------------------------------------------------
 
 
@@ -48,7 +50,7 @@ estimationMethod = EstimationMethods.inverseProjection
 roadWidth = 3.5 #m
 
 #Use the estimated camera height to increase precision (for method 1)
-heightCorrection = True
+heightCorrection = False
 
 #To filter out estimation errors, a buffer of size n will be used. The selected
 #distance will be the median of the last n estimated distances
