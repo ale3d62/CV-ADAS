@@ -126,6 +126,10 @@ class DistanceDetector():
 
             #Get vanishing point (vpx, vpy)
             vanishingPoint = self.roadLane.estimateVanishingPoint(self.resizedImgH)
+
+            if(not vanishingPoint):
+                return
+
             vanishingPoint = self.roadLane.scaleVanishingPoint(vanishingPoint, self.resizedImgH, self.resizedImgW)
 
             #Get road width in pixels at the bottom of the image
@@ -134,22 +138,22 @@ class DistanceDetector():
 
             w_px = scaledLinePointsRight[0]-scaledLinePointsLeft[0]
 
-            if(vanishingPoint):
-                v_u = vanishingPoint[1] - self.originalImgH / 2
-                v_v = vanishingPoint[0] - self.originalImgW / 2
-                #Pitch
-                estimatedCameraPitch = -atan(v_u / self.f_u)
-                self.cameraPitchBuffer.append(estimatedCameraPitch)
-                self.cameraPitch = np.average(self.cameraPitchBuffer)
-                #Yaw
-                estimatedCameraYaw = -atan(v_v / self.f_u * cos(estimatedCameraPitch))
-                self.cameraYawBuffer.append(estimatedCameraYaw)
-                self.cameraYaw = np.average(self.cameraYawBuffer)
-                #Height
-                estimatedCameraHeight = self.roadWidth * (
-                    (self.originalImgH - vanishingPoint[1]) / w_px)
-                self.cameraHeightBuffer.append(estimatedCameraHeight)
-                self.cameraHeight = np.average(self.cameraHeightBuffer)
+            #Estimate parameters
+            v_u = vanishingPoint[1] - self.originalImgH / 2
+            v_v = vanishingPoint[0] - self.originalImgW / 2
+            #Pitch
+            estimatedCameraPitch = -atan(v_u / self.f_u)
+            self.cameraPitchBuffer.append(estimatedCameraPitch)
+            self.cameraPitch = np.average(self.cameraPitchBuffer)
+            #Yaw
+            estimatedCameraYaw = -atan(v_v / self.f_u * cos(estimatedCameraPitch))
+            self.cameraYawBuffer.append(estimatedCameraYaw)
+            self.cameraYaw = np.average(self.cameraYawBuffer)
+            #Height
+            estimatedCameraHeight = self.roadWidth * (
+                (self.originalImgH - vanishingPoint[1]) / w_px)
+            self.cameraHeightBuffer.append(estimatedCameraHeight)
+            self.cameraHeight = np.average(self.cameraHeightBuffer)
 
 
 
