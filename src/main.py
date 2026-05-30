@@ -24,7 +24,7 @@ sequenceWaymo13064 = SequenceConfig("video_waymo_13064.mp4", 38.33, 36, False)
 sequenceWaymo13182 = SequenceConfig("video_waymo_13182.mp4", 38.95, 36, False)
 
 #Choose here the dataset sequence to use
-sequence = sequenceWaymo10625
+sequence = sequenceWaymo10923
 #------------------------------------------------------------------------------
 
 
@@ -44,17 +44,17 @@ bBoxMinSize = 0.025 #bboxes with a size smaller than 2.5% of the image are ignor
 
 
 #ESTIMATION METHODS
-#estimationMethod = EstimationMethods.roadWidthEstimation
-estimationMethod = EstimationMethods.inverseProjection
+estimationMethod = EstimationMethods.roadWidthEstimation
+#estimationMethod = EstimationMethods.inverseProjection
 
 roadWidth = 3.5 #m
 
-#Use the estimated camera height to increase precision (for method 1)
+#Use the estimated camera height to increase precision (for roadWidthEstimation method)
 heightCorrection = True
 
 #To filter out estimation errors, a buffer of size n will be used. The selected
 #distance will be the median of the last n estimated distances
-distanceBufferSize = 5
+distanceBufferSize = 10
 
 
 #VISUALIZATION

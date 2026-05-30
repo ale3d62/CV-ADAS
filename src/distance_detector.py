@@ -297,6 +297,10 @@ class DistanceDetector():
 
     #Updates the distance to every car
     def updateDistances(self, frameDim):
+        self.cars.sort(
+            key=lambda x: x['new']['bbox'][3] if x['new']['bbox'][3] is not None else float('-inf'),
+            reverse=True
+        )
 
         for car in self.cars:
 

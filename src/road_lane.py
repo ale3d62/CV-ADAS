@@ -20,51 +20,6 @@ class RoadLane():
 
 
 
-    #Returns the closest pixel of the mask to both sides of the x,y point at y height in both sides
-    def getLinesCoords(self, x, y, frameDim):
-        imgHeight, imgWidth, _ = frameDim
-
-        if y < 0 or y >= imgHeight:
-            return (None, None)
-
-        lx3 = rx3 = None
-
-        #left line
-        lx = x
-        while lx > 0 and lx3 == None:
-            if self.laneMask[y][lx] == 0:
-                lx -= (self.minLineWidth-1)
-            else:
-                while lx < imgWidth and self.laneMask[y][lx] == 1:
-                    lx+=1
-                lx3 = lx + 1
-
-        if(lx3 != None):
-            lx -=1
-            while(lx>0 and self.laneMask[y][lx] == 1):
-                lx -=1
-            lx3 = lx3 - ((lx3-lx)/2)
-
-        #right line
-        rx = x
-        while rx > 0 and rx < imgWidth and rx3 == None:
-            if self.laneMask[y][rx] == 0:
-                rx += (self.minLineWidth-1)
-            else:
-                while self.laneMask[y][rx] == 1:
-                    rx-=1
-                rx3 = rx - 1
-
-        if(rx3 != None):
-            rx+=1
-            while(rx < imgWidth and self.laneMask[y][rx] == 1):
-                rx +=1
-            rx3 = rx3 + ((rx-rx3)/2)
-
-        return (lx3, rx3)
-
-
-
     def showLane(self, estimationMethod, frame):
 
         if(estimationMethod == EstimationMethods.roadWidthEstimation):
@@ -98,7 +53,38 @@ class RoadLane():
         thinnedMax = cv2.ximgproc.thinning(mask2D,
                                              thinningType=cv2.ximgproc.THINNING_ZHANGSUEN)
 
+        thinnedMax = self.dynamicLaneMaskCleaning(thinnedMax)
+
         return thinnedMax
+
+
+
+    #Clears most lines that do not belong to the road lane
+    def dynamicLaneMaskCleaning(self, thinned_mask):
+
+        height, width = thinned_mask.shape
+
+        #Assign an ID to each pixel group
+        num_labels, labels = cv2.connectedComponents(thinned_mask, connectivity=8)
+
+        #Define ROI (Lower 10% and central 80%)
+        y_start = int(height * 0.9)
+        x_start = int(width * 0.2)
+        x_end = int(width * 0.8)
+
+        region = labels[y_start:height, x_start:x_end]
+
+        validIds = np.unique(region)
+
+        #Remove 0 from the list (since 0 represents the black background)
+        validIds = validIds[validIds != 0]
+
+        cleaned_mask = np.zeros_like(thinned_mask)
+
+        if len(validIds) > 0:
+            cleaned_mask[np.isin(labels, validIds)] = 255
+
+        return cleaned_mask
 
 
 
@@ -183,9 +169,7 @@ class RoadLane():
         cleanLaneMask = self.getCleanLaneMask()
         self.houghFiltering(cleanLaneMask)
 
-        return getVanishingPoint(self.linePointsLeft,
-                                 self.linePointsRight,
-                                 imgH)
+        return self.getVanishingPoint(imgH)
 
 
 
@@ -289,25 +273,61 @@ class RoadLane():
         return (new_x_cut_bottom, new_x_cut_top)
 
 
+    def getLineCoords(self, y, imgH):
+        if(self.linePointsLeft[0] == None or self.linePointsRight[0] == None):
+            return (None, None)
 
-def getVanishingPoint(lineLeft, lineRight, height):
+        y_bottom = imgH
+        y_top = imgH / 2
 
-    if(lineLeft[0] == None or lineRight[0] == None):
-        return None
+        def lane_x_at_y(lane, y):
+            x_bottom, x_top = lane
 
-    x_bottom1, x_top1 = lineLeft
-    x_bottom2, x_top2 = lineRight
+            t = (y - y_bottom) / (y_top - y_bottom)
+            return x_bottom + t * (x_top - x_bottom)
 
-    H = height - 1
+        x_left = lane_x_at_y(self.linePointsLeft, y)
+        x_right = lane_x_at_y(self.linePointsRight, y)
 
-    m1 = (x_bottom1 - x_top1) / H
-    m2 = (x_bottom2 - x_top2) / H
+        return (x_left, x_right)
 
-    #Check that the lines are not parallel
-    if abs(m1 - m2) < 1e-6:
-        return None
 
-    y_vp = (x_top2 - x_top1) / (m1 - m2)
-    x_vp = x_top1 + m1 * y_vp
 
-    return (x_vp, y_vp + height/2)
+    def carInLane(self, x, y, imgH):
+        y_bottom = imgH
+        y_top = imgH / 2
+
+        def lane_x_at_y(lane, y):
+            x_bottom, x_top = lane
+
+            t = (y - y_bottom) / (y_top - y_bottom)
+            return x_bottom + t * (x_top - x_bottom)
+
+        x_left = lane_x_at_y(self.linePointsLeft, y)
+        x_right = lane_x_at_y(self.linePointsRight, y)
+
+        return x_left <= x <= x_right
+
+
+
+    def getVanishingPoint(self, height):
+
+        if(self.linePointsLeft[0] == None or self.linePointsRight[0] == None):
+            return None
+
+        x_bottom1, x_top1 = self.linePointsLeft
+        x_bottom2, x_top2 = self.linePointsRight
+
+        H = height - 1
+
+        m1 = (x_bottom1 - x_top1) / H
+        m2 = (x_bottom2 - x_top2) / H
+
+        #Check that the lines are not parallel
+        if abs(m1 - m2) < 1e-6:
+            return None
+
+        y_vp = (x_top2 - x_top1) / (m1 - m2)
+        x_vp = x_top1 + m1 * y_vp
+
+        return (x_vp, y_vp + height/2)
