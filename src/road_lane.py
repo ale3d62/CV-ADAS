@@ -68,7 +68,7 @@ class RoadLane():
         num_labels, labels = cv2.connectedComponents(thinned_mask, connectivity=8)
 
         #Define ROI (Lower 10% and central 80%)
-        y_start = int(height * 0.9)
+        y_start = int((height-self.paddingTop) * 0.9)
         x_start = int(width * 0.2)
         x_end = int(width * 0.8)
 

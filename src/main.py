@@ -24,7 +24,7 @@ sequenceWaymo13064 = SequenceConfig("video_waymo_13064.mp4", 38.33, 36, False)
 sequenceWaymo13182 = SequenceConfig("video_waymo_13182.mp4", 38.95, 36, False)
 
 #Choose here the dataset sequence to use
-sequence = sequenceWaymo10923
+sequence = sequenceKITTI15
 #------------------------------------------------------------------------------
 
 
@@ -50,7 +50,7 @@ estimationMethod = EstimationMethods.roadWidthEstimation
 roadWidth = 3.5 #m
 
 #Use the estimated camera height to increase precision (for roadWidthEstimation method)
-heightCorrection = True
+heightCorrection = False
 
 #To filter out estimation errors, a buffer of size n will be used. The selected
 #distance will be the median of the last n estimated distances
@@ -69,8 +69,8 @@ showSettings = {
 }
 
 #DATA EXTRACTION
-#dataExtractionType = DataExtractionTypes.none
-dataExtractionType = DataExtractionTypes.distances
+dataExtractionType = DataExtractionTypes.none
+#dataExtractionType = DataExtractionTypes.distances
 #dataExtractionType = DataExtractionTypes.cameraHeight
 #dataExtractionType = DataExtractionTypes.cameraPitch
 #dataExtractionType = DataExtractionTypes.cameraYaw
