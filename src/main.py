@@ -5,6 +5,8 @@ from data_extraction import DataExtractionTypes
 from distance_detector import DistanceDetector
 from auxFunctions import *
 from time import time
+import psutil
+import os
 from ultralytics import YOLO
 from collections import deque
 
@@ -24,7 +26,7 @@ sequenceWaymo13064 = SequenceConfig("video_waymo_13064.mp4", 38.33, 36, False)
 sequenceWaymo13182 = SequenceConfig("video_waymo_13182.mp4", 38.95, 36, False)
 
 #Choose here the dataset sequence to use
-sequence = sequenceKITTI15
+sequence = sequenceWaymo13182
 #------------------------------------------------------------------------------
 
 
@@ -50,7 +52,7 @@ estimationMethod = EstimationMethods.roadWidthEstimation
 roadWidth = 3.5 #m
 
 #Use the estimated camera height to increase precision (for roadWidthEstimation method)
-heightCorrection = False
+heightCorrection = True
 
 #To filter out estimation errors, a buffer of size n will be used. The selected
 #distance will be the median of the last n estimated distances
@@ -67,6 +69,11 @@ showSettings = {
     "carId": False,
     "lanes": True
 }
+
+#Other statistics
+showTime = True
+showCPUUsage = True
+showMemoryUsage = True
 
 #DATA EXTRACTION
 dataExtractionType = DataExtractionTypes.none
@@ -89,6 +96,7 @@ vid.set(cv2.CAP_PROP_BUFFERSIZE, 1)
 
 
 #====== INITIALIZE VARIABLES =======
+process = psutil.Process(os.getpid())
 totalTime = 0
 totalTimeYolo = 0
 totalTimeLane = 0
@@ -135,8 +143,10 @@ detector = DistanceDetector(
 
 
 
-#start timer
-st = time()
+#Start timer
+startTime = time()
+cpu_before = process.cpu_percent(interval=None)
+mem_before = process.memory_info().rss / 1024**2  #MB
 
 
 #====== MAIN LOOP ======
@@ -160,10 +170,7 @@ while(ret):
 
 
     #SCAN FOR CARS AND LINES
-    sty = time()
     detector.detectDistances(model, frame)
-
-    totalTimeYolo += (time()-sty)*1000
 
     #If there are no cars, skip to next frame
     if(detector.nCars() == 0):
@@ -221,6 +228,20 @@ while(ret):
         print("-")
 
 
+elapsedTime = time() - startTime
+cpu_after = process.cpu_percent(interval=None)
+mem_after = process.memory_info().rss / 1024**2 #MB
+
+
 print("")
 print(f"Totalframes: {totalFrames}")
+
+if(showTime):
+    avgIterationTime = elapsedTime/totalFrames
+    print(f"Average time per iteration: {avgIterationTime:.4f}ms".replace(".",","))
+if(showCPUUsage):
+    print(f"CPU usage: {(cpu_after/psutil.cpu_count()):.1f}%".replace(".",","))
+if(showMemoryUsage):
+    print(f"Memory usage: {mem_after:.1f}MB".replace(".",","))
+
 print("System exiting successfully")
