@@ -125,7 +125,7 @@ class DistanceDetector():
             self.f_u = self.f_v = self.f/pixelW
 
             #Get vanishing point (vpx, vpy)
-            vanishingPoint = self.roadLane.estimateVanishingPoint(self.resizedImgH)
+            vanishingPoint = self.roadLane.getVanishingPoint(self.resizedImgH)
 
             if(not vanishingPoint):
                 return
@@ -139,14 +139,14 @@ class DistanceDetector():
             w_px = scaledLinePointsRight[0]-scaledLinePointsLeft[0]
 
             #Estimate parameters
-            v_u = vanishingPoint[1] - self.originalImgH / 2
-            v_v = vanishingPoint[0] - self.originalImgW / 2
+            v_v = vanishingPoint[1] - self.originalImgH / 2
+            v_u = vanishingPoint[0] - self.originalImgW / 2
             #Pitch
-            estimatedCameraPitch = -atan(v_u / self.f_u)
+            estimatedCameraPitch = -atan(v_v / self.f_u)
             self.cameraPitchBuffer.append(estimatedCameraPitch)
             self.cameraPitch = np.average(self.cameraPitchBuffer)
             #Yaw
-            estimatedCameraYaw = -atan(v_v / self.f_u * cos(estimatedCameraPitch))
+            estimatedCameraYaw = -atan(v_u / self.f_u * cos(estimatedCameraPitch))
             self.cameraYawBuffer.append(estimatedCameraYaw)
             self.cameraYaw = np.average(self.cameraYawBuffer)
             #Height
@@ -175,6 +175,7 @@ class DistanceDetector():
 
             # PROCESS LANE
             self.roadLane.laneMask = results[-1][0].to(torch.uint8).cpu().numpy()
+            self.roadLane.processLane()
 
             frameH, frameW, _ = frame.shape
 

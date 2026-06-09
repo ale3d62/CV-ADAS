@@ -164,12 +164,10 @@ class RoadLane():
 
 
 
-    def estimateVanishingPoint(self, imgH):
+    def processLane(self):
 
         cleanLaneMask = self.getCleanLaneMask()
         self.houghFiltering(cleanLaneMask)
-
-        return self.getVanishingPoint(imgH)
 
 
 
