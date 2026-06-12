@@ -130,6 +130,6 @@ def calcDistance(u,
 
     S = height/y_w
 
-    Z = S*z_w
+    d = S*z_w
 
-    return Z
+    return d

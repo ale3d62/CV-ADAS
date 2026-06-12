@@ -26,7 +26,7 @@ sequenceWaymo13064 = SequenceConfig("video_waymo_13064.mp4", 38.33, 36, False)
 sequenceWaymo13182 = SequenceConfig("video_waymo_13182.mp4", 38.95, 36, False)
 
 #Choose here the dataset sequence to use
-sequence = sequenceWaymo13182
+sequence = sequenceKITTI15
 #------------------------------------------------------------------------------
 
 
@@ -46,8 +46,8 @@ bBoxMinSize = 0.025 #bboxes with a size smaller than 2.5% of the image are ignor
 
 
 #ESTIMATION METHODS
-estimationMethod = EstimationMethods.roadWidthEstimation
-#estimationMethod = EstimationMethods.inverseProjection
+#estimationMethod = EstimationMethods.roadWidthEstimation
+estimationMethod = EstimationMethods.inverseProjection
 
 roadWidth = 3.5 #m
 
@@ -76,8 +76,8 @@ showCPUUsage = True
 showMemoryUsage = True
 
 #DATA EXTRACTION
-dataExtractionType = DataExtractionTypes.none
-#dataExtractionType = DataExtractionTypes.distances
+#dataExtractionType = DataExtractionTypes.none
+dataExtractionType = DataExtractionTypes.distances
 #dataExtractionType = DataExtractionTypes.cameraHeight
 #dataExtractionType = DataExtractionTypes.cameraPitch
 #dataExtractionType = DataExtractionTypes.cameraYaw
@@ -238,7 +238,8 @@ print(f"Totalframes: {totalFrames}")
 
 if(showTime):
     avgIterationTime = elapsedTime/totalFrames
-    print(f"Average time per iteration: {avgIterationTime:.4f}ms".replace(".",","))
+    avgIterationTimeMs = avgIterationTime*1000
+    print(f"Average time per iteration: {avgIterationTimeMs:.4f}ms".replace(".",","))
 if(showCPUUsage):
     print(f"CPU usage: {(cpu_after/psutil.cpu_count()):.1f}%".replace(".",","))
 if(showMemoryUsage):
