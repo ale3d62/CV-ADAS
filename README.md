@@ -9,6 +9,8 @@ geometric methods: lane-width estimation and inverse projection. It also include
 prepare the test videos and obtain the reference values (*ground truth*) from the KITTI and Waymo
 datasets.
 
+![preview](https://github.com/ale3d62/CV-ADAS/blob/TFM/readmegif.gif?raw=true)
+
 ---
 
 ## 1. Repository structure
