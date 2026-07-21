@@ -11,17 +11,10 @@ deep_sort/
 tracker.py
 
 
-#Videos - Images
-test_images/
-test_videos/
-*.mp4
-
-
 #Model files
 *.bin
 *.param
 *.pt
-*.onnx
 
 #Datasets
 datasets/
