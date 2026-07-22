@@ -17,6 +17,8 @@ computer vision** pipeline (lane detection via the Hough transform) and a **deep
 hardware, and the repository also includes the benchmarking code used to measure their accuracy and their
 performance on the target devices.
 
+![preview](https://github.com/ale3d62/CV-ADAS/blob/TFG/readmegif.gif?raw=true)
+
 ---
 
 ## 1. Repository structure
