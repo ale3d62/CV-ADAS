@@ -1,7 +1,7 @@
 # Longitudinal distance estimation using monocular vision and geometric autocalibration
 
 Source code of the Master's Thesis *"Longitudinal distance estimation in traffic videos using
-monocular vision and geometric autocalibration"*.
+monocular vision and geometric autocalibration"*. The full thesis is openly available in the University of Cádiz institutional repository (RODIN): [hdl.handle.net/10498/40163](hdl.handle.net/10498/40163).
 
 From a single camera (dashcam), the system detects the vehicles and lanes on the road, autocalibrates
 the camera (height, *pitch* and *yaw*) and estimates the distance to the leading vehicle using two
@@ -132,3 +132,22 @@ Scripts (`datasets/waymo_dataset/`):
 - **`waymo_distance_extractor.py`** — Real longitudinal distance to the leading vehicle, frame by frame.
 - **`waymo_camera_parameters_extractor.py`** — Camera parameters: intrinsics (`f_u`, `f_v`, `c_u`,
   `c_v`), height, orientation (*yaw*, *pitch*, *roll*) and estimated focal length in mm.
+
+---
+
+## 6. Citation
+
+Díaz Gómez, A. (2026). *Estimación de la distancia longitudinal en vídeos de tráfico mediante visión monocular y autocalibración geométrica*
+[Master's Thesis, Universidad de Cádiz]. RODIN. http://hdl.handle.net/10498/40163
+
+```bibtex
+@thesis{diazgomez2026dashcams,
+  author = {Díaz Gómez, Alejandro},
+  title  = {Estimación de la distancia longitudinal en vídeos de tráfico mediante visión monocular y autocalibración geométrica},
+  school = {Universidad de Cádiz},
+  year   = {2026},
+  month  = {7},
+  type   = {Master's Thesis},
+  url    = {http://hdl.handle.net/10498/40163}
+}
+```
